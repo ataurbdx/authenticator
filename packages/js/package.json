@@ -1,0 +1,30 @@
+{
+  "name": "@ataurbdx/authenticator",
+  "version": "1.0.0",
+  "description": "Universal Authentication & Security Client SDK for React, Next.js, and Node.js applications, powered by Authenticator backend.",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "auth",
+    "authenticator",
+    "security",
+    "2fa",
+    "otp",
+    "pin",
+    "react",
+    "nextjs"
+  ],
+  "author": "Ataur Rahman <ataurbdx@gmail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

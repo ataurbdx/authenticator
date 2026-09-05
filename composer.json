@@ -1,0 +1,51 @@
+{
+    "name": "ataurbdx/authenticator",
+    "description": "Universal Modular Authentication & Security Engine for Laravel (Multi-Identifier, OTP, 2FA, PIN Content Lock, Dynamic Socialite).",
+    "keywords": [
+        "laravel",
+        "authentication",
+        "authenticator",
+        "otp",
+        "two-factor",
+        "2fa",
+        "pin-lock",
+        "socialite",
+        "ataurbdx"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ataur Rahman",
+            "email": "ataurrahman.wub@gmail.com",
+            "role": "Lead Architect"
+        }
+    ],
+    "require": {
+        "php": "^8.1|^8.2|^8.3|^8.4",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/console": "^10.0|^11.0|^12.0"
+    },
+    "suggest": {
+        "laravel/socialite": "Required to use the dynamic Social Accounts OAuth module (^5.0)."
+    },
+    "autoload": {
+        "psr-4": {
+            "Ataurbdx\\Authenticator\\": "packages/laravel/src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ataurbdx\\Authenticator\\AuthenticatorServiceProvider"
+            ],
+            "aliases": {
+                "Authenticator": "Ataurbdx\\Authenticator\\Facades\\Authenticator"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
