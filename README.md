@@ -94,5 +94,7 @@ php artisan authenticator:install --all --framework=all
 ---
 
 ## 📖 Complete Documentation
-* [Architecture & Migration Plan](about/MIGRATION_PLAN.md)
-* [Core Commands Reference](about/COMMANDS.txt)
+* 📘 **[Full Documentation & API Reference](DOCUMENTATION.md)** — Complete installation, config, Blade embedding, REST APIs, and Facade guide.
+* 📋 **[Core Commands Quick Reference](about/COMMANDS.txt)** — Artisan commands and publish tags cheat sheet.
+* 🏛️ **[Architecture & Migration Plan](about/MIGRATION_PLAN.md)** — Modular design and engine specs.
+
