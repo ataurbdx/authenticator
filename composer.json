@@ -12,6 +12,11 @@
         "socialite",
         "ataurbdx"
     ],
+    "homepage": "https://github.com/ataurbdx/authenticator",
+    "support": {
+        "issues": "https://github.com/ataurbdx/authenticator/issues",
+        "source": "https://github.com/ataurbdx/authenticator"
+    },
     "type": "library",
     "license": "MIT",
     "authors": [
