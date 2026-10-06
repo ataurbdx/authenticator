@@ -18,6 +18,7 @@ class UserSocial extends Model
     {
         return [
             'provider_data' => 'array',
+            'primary' => 'boolean',
         ];
     }
 
@@ -33,6 +34,36 @@ class UserSocial extends Model
     }
 
     /**
+     * Scope a query to only include primary social profiles.
+     */
+    public function scopePrimary($query)
+    {
+        return $query->where('primary', true);
+    }
+
+    /**
+     * Check if this profile is marked as the primary social profile.
+     */
+    public function isPrimary(): bool
+    {
+        return (bool) $this->primary;
+    }
+
+    /**
+     * Mark this social account as primary and unset primary for other accounts of this user.
+     */
+    public function makePrimary(): self
+    {
+        static::where('user_id', $this->user_id)
+            ->where('id', '!=', $this->id)
+            ->update(['primary' => false]);
+
+        $this->update(['primary' => true]);
+
+        return $this;
+    }
+
+    /**
      * Convenient accessor: $userSocial->provider returns "google".
      */
     public function getProviderAttribute(): string
@@ -40,3 +71,4 @@ class UserSocial extends Model
         return $this->socialProvider->provider ?? '';
     }
 }
+

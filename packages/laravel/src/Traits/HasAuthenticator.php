@@ -131,6 +131,50 @@ trait HasAuthenticator
         return $this->hasMany(UserSocial::class, 'user_id');
     }
 
+    /**
+     * Primary linked social OAuth profile.
+     */
+    public function primarySocial(): HasOne
+    {
+        return $this->hasOne(UserSocial::class, 'user_id')->where('primary', true);
+    }
+
+    /**
+     * Check if user has a specific social provider linked.
+     */
+    public function hasSocial(string $provider): bool
+    {
+        return $this->socials()
+            ->whereHas('socialProvider', fn ($q) => $q->where('provider', strtolower($provider)))
+            ->exists();
+    }
+
+    /**
+     * Retrieve user's social profile by provider name.
+     */
+    public function getSocial(string $provider): ?UserSocial
+    {
+        return $this->socials()
+            ->whereHas('socialProvider', fn ($q) => $q->where('provider', strtolower($provider)))
+            ->first();
+    }
+
+    /**
+     * Set a social account as the primary social profile for this user.
+     */
+    public function setPrimarySocial(int|UserSocial $social): bool
+    {
+        $socialId = $social instanceof UserSocial ? $social->id : $social;
+
+        $target = $this->socials()->where('id', $socialId)->first();
+        if (!$target) {
+            return false;
+        }
+
+        $target->makePrimary();
+        return true;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query Scopes

@@ -28,11 +28,13 @@ return new class extends Migration
                 $table->string('name', 255)->nullable();
                 $table->string('avatar', 255)->nullable();
                 $table->json('provider_data')->nullable()->comment('Full payload & access token data');
+                $table->boolean('primary')->default(false)->comment('1 if primary/registration account, 0 otherwise');
                 $table->timestamps();
 
                 // Constraints
                 $table->unique(['social_provider_id', 'provider_id'], 'uniq_provider_account');
                 $table->unique(['user_id', 'social_provider_id'], 'uniq_user_provider');
+                $table->index(['user_id', 'primary'], 'idx_user_social_primary');
                 $table->index('email', 'idx_social_email');
             });
         }
@@ -47,3 +49,4 @@ return new class extends Migration
         Schema::dropIfExists($table);
     }
 };
+

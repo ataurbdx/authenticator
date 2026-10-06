@@ -99,6 +99,10 @@ class SocialiteService
      */
     public function linkAccount($user, SocialProvider $provider, $socialUser): array
     {
+        $hasPrimary = UserSocial::where('user_id', $user->id)
+            ->where('primary', true)
+            ->exists();
+
         $link = UserSocial::updateOrCreate(
             [
                 'user_id'            => $user->id,
@@ -113,8 +117,9 @@ class SocialiteService
             ]
         );
 
-        if (empty($user->user_social_id)) {
-            $user->update(['user_social_id' => $link->id]);
+        // If the user has no primary social account yet, make this one primary:
+        if (!$hasPrimary) {
+            $link->makePrimary();
         }
 
         Auth::login($user, true);
@@ -123,6 +128,77 @@ class SocialiteService
             'success' => true,
             'message' => "Successfully connected {$provider->name} account.",
             'user'    => $user,
+        ];
+    }
+
+    /**
+     * Unlink a social provider account from user.
+     */
+    public function unlinkAccount($user, string $providerName): array
+    {
+        $provider = SocialProvider::where('provider', strtolower($providerName))->first();
+        if (!$provider) {
+            throw new \RuntimeException("Social provider [{$providerName}] not found.");
+        }
+
+        $link = UserSocial::where('user_id', $user->id)
+            ->where('social_provider_id', $provider->id)
+            ->first();
+
+        if (!$link) {
+            return [
+                'success' => false,
+                'message' => "No {$provider->name} account is linked.",
+            ];
+        }
+
+        // Prevent unlinking if user has no password and this is their only social account
+        if (empty($user->password) && UserSocial::where('user_id', $user->id)->count() <= 1) {
+            throw new \RuntimeException("Cannot disconnect your only login method. Please set a password first.");
+        }
+
+        $wasPrimary = (bool) $link->primary;
+        $link->delete();
+
+        // If it was primary, promote the next available social profile to primary
+        if ($wasPrimary) {
+            $next = UserSocial::where('user_id', $user->id)->first();
+            $next?->makePrimary();
+        }
+
+        return [
+            'success' => true,
+            'message' => "Successfully disconnected {$provider->name} account.",
+        ];
+    }
+
+    /**
+     * Set a social profile as primary for the user.
+     */
+    public function setPrimaryAccount($user, string $providerName): array
+    {
+        $provider = SocialProvider::where('provider', strtolower($providerName))->first();
+        if (!$provider) {
+            throw new \RuntimeException("Social provider [{$providerName}] not found.");
+        }
+
+        $link = UserSocial::where('user_id', $user->id)
+            ->where('social_provider_id', $provider->id)
+            ->first();
+
+        if (!$link) {
+            return [
+                'success' => false,
+                'message' => "No {$provider->name} account is linked to set as primary.",
+            ];
+        }
+
+        $link->makePrimary();
+
+        return [
+            'success' => true,
+            'message' => "{$provider->name} is now your primary social account.",
+            'social'  => $link,
         ];
     }
 
@@ -159,9 +235,10 @@ class SocialiteService
             'name'               => $socialUser->getName(),
             'avatar'             => $socialUser->getAvatar(),
             'provider_data'      => (array) $socialUser->user,
+            'primary'            => true,
         ]);
 
-        $user->update(['user_social_id' => $link->id]);
+        // Primary status is tracked on user_socials
 
         Auth::login($user, true);
 
@@ -193,3 +270,4 @@ class SocialiteService
         return $username;
     }
 }
+

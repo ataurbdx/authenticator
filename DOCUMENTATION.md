@@ -131,6 +131,7 @@ The trait immediately enables all relationships without writing a single line of
 | `$user->twoFa` | `HasOne` | `User2fa` | 2FA TOTP secret, QR URL, and backup codes. |
 | `$user->otps` | `HasMany` | `OtpCode` | Collection of generated OTP verification tokens (`otp_codes` table). |
 | `$user->socials` | `HasMany` | `UserSocial` | Collection of linked OAuth social provider accounts. |
+| `$user->primarySocial` | `HasOne` | `UserSocial` | The user's primary linked social account (where `primary = true`). |
 
 #### Relationship Usage Examples:
 ```php
@@ -143,8 +144,12 @@ $pinConfig = $user->pinSettings;
 // Check user's OTP verification history
 $recentOtps = $user->otps()->latest()->take(5)->get();
 
-// Get linked social accounts
-$connectedGoogle = $user->socials()->where('provider_name', 'google')->first();
+// Access primary social account
+$primarySocial = $user->primarySocial; // e.g. $primarySocial->email or $primarySocial->avatar
+
+// Check or get linked social accounts
+$hasGoogle = $user->hasSocial('google');
+$googleAccount = $user->getSocial('google');
 ```
 
 ### 2. Powerful Built-in Query Scopes

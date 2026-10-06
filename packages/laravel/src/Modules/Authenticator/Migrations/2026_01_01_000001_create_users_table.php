@@ -35,7 +35,6 @@ return new class extends Migration
             // 4. Authentication Credentials
             $table->string('password')->nullable()->comment('Nullable for social-only or OTP-only users');
             $table->string('pin', 255)->nullable()->comment('Hashed 4-6 digit security PIN');
-            $table->unsignedBigInteger('user_social_id')->nullable()->unique()->comment('Primary social profile pointer');
 
             // 5. Account Security Toggles
             $table->boolean('two_factor')->default(false)->comment('True if 2FA is enforced on every login');
