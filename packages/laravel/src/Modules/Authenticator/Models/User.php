@@ -1,6 +1,6 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Modules\Auth\Models;
+namespace Ataurbdx\Authenticator\Modules\Authenticator\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;

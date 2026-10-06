@@ -1,6 +1,6 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Modules\Auth\Middleware;
+namespace Ataurbdx\Authenticator\Modules\Authenticator\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

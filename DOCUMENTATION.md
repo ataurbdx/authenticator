@@ -129,7 +129,7 @@ The trait immediately enables all relationships without writing a single line of
 | `$user->data` | `HasOne` | `UserData` | User's extended profile data / dynamic metadata. |
 | `$user->pinSettings` | `HasOne` | `UserPin` | Security PIN hash, salts, attempts & lock state. |
 | `$user->twoFa` | `HasOne` | `User2fa` | 2FA TOTP secret, QR URL, and backup codes. |
-| `$user->otps` | `HasMany` | `UserOtp` | Collection of generated OTP verification tokens. |
+| `$user->otps` | `HasMany` | `OtpCode` | Collection of generated OTP verification tokens (`otp_codes` table). |
 | `$user->socials` | `HasMany` | `UserSocial` | Collection of linked OAuth social provider accounts. |
 
 #### Relationship Usage Examples:
@@ -186,7 +186,8 @@ In addition to your `User` model, the package provides the following models loca
 | `Ataurbdx\Authenticator\Modules\Auth\Models\UserData` | `user_data` | Extra metadata profile. Belongs to `User` via `$user->userData`. |
 | `Ataurbdx\Authenticator\Modules\Pin\Models\UserPin` | `user_pins` | Hashed PIN & attempt logs. Accessible via `$user->pin`. |
 | `Ataurbdx\Authenticator\Modules\TwoFactor\Models\User2fa` | `user_2fa` | TOTP secret, backup codes. Accessible via `$user->twoFactor`. |
-| `Ataurbdx\Authenticator\Modules\Otp\Models\UserOtp` | `user_otps` | Verification tokens & status. Accessible via `$user->otps`. |
+| `Ataurbdx\Authenticator\Modules\Otp\Models\OtpCode` | `otp_codes` | Universal OTP verification tokens across any channel & purpose. |
+| `Ataurbdx\Authenticator\Modules\Otp\Models\OtpChannel` | `otp_channels` | Hybrid multi-channel gateways (SMTP, Twilio, WhatsApp, Telegram). Resolved by `name` or `type`. |
 | `Ataurbdx\Authenticator\Modules\Socialite\Models\SocialProvider` | `social_providers` | Dynamic OAuth configurations. Use `SocialProvider::active()->get()`. |
 | `Ataurbdx\Authenticator\Modules\Socialite\Models\UserSocial` | `user_socials` | Linked OAuth provider accounts. Accessible via `$user->socials`. |
 
@@ -372,7 +373,8 @@ return [
         'users'            => 'users',
         'user_data'        => 'user_data',
         'user_pins'        => 'user_pins',
-        'user_otps'        => 'user_otps',
+        'otp_codes'        => 'otp_codes',
+        'otp_channels'     => 'otp_channels',
         'user_2fa'         => 'user_2fa',
         'social_providers' => 'social_providers',
         'user_socials'     => 'user_socials',
@@ -394,7 +396,8 @@ The migrations are smart and safe:
 | `2026_01_01_000001_create_users_table.php` | `users` | Multi-identifier credentials, status, PIN & 2FA toggles. |
 | `2026_01_01_000002_create_user_data_table.php` | `user_data` | Dynamic user profile metadata. |
 | `2026_01_01_000003_create_user_pins_table.php` | `user_pins` | Security PIN hash, salts & lock timers. |
-| `2026_01_01_000004_create_user_otps_table.php` | `user_otps` | OTP tokens, expiry & validation state. |
+| `2026_01_01_000004_create_otp_codes_table.php` | `otp_codes` | Universal OTP tokens with `purpose` column across all channels. |
+| `2026_01_01_000008_create_otp_channels_table.php` | `otp_channels` | Multi-channel gateways (SMTP, Twilio, WhatsApp, Telegram) with direct JSON and polymorphic gateway model support. |
 | `2026_01_01_000005_create_user_2fa_table.php` | `user_2fa` | Encrypted TOTP secret & recovery codes. |
 | `2026_01_01_000006_create_social_providers_table.php` | `social_providers` | Dynamic OAuth provider configurations. |
 | `2026_01_01_000007_create_user_socials_table.php` | `user_socials` | Linked social provider profiles. |
@@ -412,10 +415,22 @@ use Ataurbdx\Authenticator\Facades\Authenticator;
 $auth = Authenticator::auth();
 $user = $auth->loginWithIdentifier('user@example.com', 'secret123');
 
-// 2. OTP Verification Service
+// 2. Universal Multi-Channel OTP Service (Universal Purpose Architecture)
 $otp = Authenticator::otp();
-$otp->send(identifier: '+8801780863100', channel: 'sms');
-$isValid = $otp->verify(identifier: '+8801780863100', code: '123456');
+
+// Send OTP for ANY purpose (registration, login_2fa, vault_unlock, etc.) to ANY channel (email, sms, whatsapp, telegram)
+$result = $otp->send(
+    contact: '+8801780863100',
+    purpose: 'vault_unlock',
+    channel: 'whatsapp' // auto-detected if omitted (email if @ exists, else default SMS)
+);
+
+// Verify OTP for that specific purpose
+$validation = $otp->verify(
+    contact: '+8801780863100',
+    code: '123456',
+    purpose: 'vault_unlock'
+);
 
 // 3. Two-Factor (2FA) Service
 $twoFa = Authenticator::twoFa();

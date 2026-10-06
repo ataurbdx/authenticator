@@ -57,24 +57,58 @@ return [
         'users'            => 'users',
         'user_data'        => 'user_data',
         'user_pins'        => 'user_pins',
-        'user_otps'        => 'user_otps',
-        'user_2fa'         => 'user_2fa',
-        'user_socials'     => 'user_socials',
-        'social_providers' => 'social_providers',
+        'otp_codes'        => 'otp_codes',
+        'otp_channels'     => 'otp_channels',
+        'user_2fa'              => 'user_2fa',
+        'user_socials'          => 'user_socials',
+        'social_providers'      => 'social_providers',
+        'settings'              => 'authenticator_settings',
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | OTP Module Settings
+    | OTP & Verification Settings
     |--------------------------------------------------------------------------
     |
     */
     'otp' => [
-        'length'             => 6,
-        'expiration_minutes' => 10,
-        'max_attempts'       => 5,
-        'default_channel'    => 'email', // email or phone
-        'debug_in_dev'       => env('APP_DEBUG', true),
+        'length'               => 6,
+        'expiration_minutes'   => 10,
+        'max_attempts'         => 5,
+        'default_channel'      => 'email', // 'email' or 'phone'
+        'channel_setting_name' => env('AUTH_OTP_CHANNEL_SETTING', 'authenticator'),
+        'email_subject'        => env('AUTH_OTP_EMAIL_SUBJECT', 'Your Security Verification Code'),
+        'debug_in_dev'         => env('APP_DEBUG', true),
+
+        // Default Delivery Mode: 'code', 'link', or 'both' (Dynamically controlled via 'authenticator_settings' or 'otp_channels' table)
+        'default_mode'            => env('AUTH_VERIFICATION_MODE', 'both'),
+        'link_expiration_minutes' => env('AUTH_VERIFICATION_LINK_EXPIRY', 60),
+
+        // Optional Shortlink Generator hook/closure/service (null defaults to standard full URL)
+        'shortener'            => null,
+
+        // Fallback Channel Modes (Dynamically resolved from 'otp_channels' table or 'authenticator_settings' DB)
+        'channel_modes'        => [],
+
+        // Dynamic Action-to-Table Mapping (Hybrid purpose routing)
+        'action_tables'        => [
+            // 'vault_access'   => 'admin_otps',
+            // 'order_approval' => 'order_otps',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Account Verification Policy
+    |--------------------------------------------------------------------------
+    | Define whether unverified users are blocked from dashboard until verified.
+    | All values below can be dynamically managed from the 'authenticator_settings' table.
+    |
+    */
+    'verification' => [
+        'mandatory'                   => env('AUTH_VERIFICATION_MANDATORY', false),
+        'notice_route'                => env('AUTH_VERIFICATION_NOTICE_ROUTE', 'authenticator.web.verify-otp'),
+        'redirect_after_verification' => env('AUTH_VERIFICATION_REDIRECT', null), // null dynamically resolves to dashboard / home / '/'
     ],
 
     /*

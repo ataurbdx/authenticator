@@ -1,18 +1,18 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Http\Controllers\Web\Auth;
+namespace Ataurbdx\Authenticator\Http\Controllers\Web\Authenticator;
 
 use Illuminate\Routing\Controller;
 
-class AuthViewController extends Controller
+class AuthenticatorController extends Controller
 {
     /**
-     * Resolve view: prioritize published view in resources/views/auth, fallback to package view.
+     * Resolve view: prioritize published view in resources/views/authenticator, fallback to package view.
      */
     protected function renderAuthView(string $viewName, array $data = [])
     {
-        if (view()->exists("auth.{$viewName}")) {
-            return view("auth.{$viewName}", $data);
+        if (view()->exists("authenticator.{$viewName}")) {
+            return view("authenticator.{$viewName}", $data);
         }
 
         return view("authenticator::{$viewName}", $data);
@@ -99,5 +99,38 @@ class AuthViewController extends Controller
     public function showResetPassword()
     {
         return $this->renderAuthView('reset-password');
+    }
+
+    /**
+     * Handle Direct Verification Link confirmation.
+     */
+    public function verifyLink(\Illuminate\Http\Request $request, string $token)
+    {
+        $otpService = app('authenticator.otp');
+        $result = $otpService->verifyByToken($token);
+
+        if (!$result['success']) {
+            if ($request->wantsJson()) {
+                return response()->json($result, 422);
+            }
+
+            return $this->renderAuthView('verify-status', [
+                'success' => false,
+                'message' => $result['message'],
+            ]);
+        }
+
+        // Auto-login user if valid user is returned and not already logged in
+        if (!empty($result['user']) && !auth()->check()) {
+            auth()->login($result['user']);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        $redirectUrl = \Ataurbdx\Authenticator\Modules\Authenticator\Models\AuthenticatorSetting::getRedirectUrl();
+
+        return redirect()->intended($redirectUrl)->with('success', 'Verification confirmed successfully!');
     }
 }

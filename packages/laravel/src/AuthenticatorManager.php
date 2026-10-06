@@ -2,7 +2,7 @@
 
 namespace Ataurbdx\Authenticator;
 
-use Ataurbdx\Authenticator\Modules\Auth\Services\AuthService;
+use Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService;
 use Ataurbdx\Authenticator\Modules\Otp\Services\OtpService;
 use Ataurbdx\Authenticator\Modules\TwoFactor\Services\TwoFactorService;
 use Ataurbdx\Authenticator\Modules\Pin\Services\PinService;
@@ -11,11 +11,19 @@ use Ataurbdx\Authenticator\Modules\Socialite\Services\SocialiteService;
 class AuthenticatorManager
 {
     /**
-     * Get the Core Authentication service.
+     * Get the Core Authenticator service.
      */
-    public function auth(): AuthService
+    public function auth(): AuthenticatorService
     {
         return app('authenticator.auth');
+    }
+
+    /**
+     * Alias for auth().
+     */
+    public function authenticator(): AuthenticatorService
+    {
+        return $this->auth();
     }
 
     /**

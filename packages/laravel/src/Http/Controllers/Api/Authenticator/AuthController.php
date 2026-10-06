@@ -1,18 +1,19 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Http\Controllers\Api\Auth;
+namespace Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Ataurbdx\Authenticator\Modules\Auth\Services\AuthService;
+use Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService;
+use Ataurbdx\Authenticator\Modules\Authenticator\Models\AuthenticatorSetting;
 
 class AuthController extends Controller
 {
-    protected AuthService $authService;
+    protected AuthenticatorService $authService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthenticatorService $authService)
     {
         $this->authService = $authService;
     }
@@ -112,6 +113,14 @@ class AuthController extends Controller
         }
 
         $result = $this->authService->register($request->all());
+
+        if (!empty($result['requires_verification'])) {
+            $noticeRoute = AuthenticatorSetting::getNoticeRoute();
+            $result['redirect'] = \Illuminate\Support\Facades\Route::has($noticeRoute) ? route($noticeRoute) : url($noticeRoute);
+        } else {
+            $result['redirect'] = AuthenticatorSetting::getRedirectUrl();
+        }
+
         return response()->json($result, 201);
     }
 

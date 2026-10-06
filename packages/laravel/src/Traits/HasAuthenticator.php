@@ -5,14 +5,16 @@ namespace Ataurbdx\Authenticator\Traits;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Ataurbdx\Authenticator\Modules\Auth\Models\UserData;
+use Ataurbdx\Authenticator\Modules\Authenticator\Models\UserData;
 use Ataurbdx\Authenticator\Modules\Pin\Models\UserPin;
 use Ataurbdx\Authenticator\Modules\TwoFactor\Models\User2fa;
-use Ataurbdx\Authenticator\Modules\Otp\Models\UserOtp;
+use Ataurbdx\Authenticator\Modules\Otp\Models\OtpCode;
 use Ataurbdx\Authenticator\Modules\Socialite\Models\UserSocial;
 
 trait HasAuthenticator
 {
+    use HasOtp;
+
     /**
      * Automatic Name Handling (Accessor + Mutator).
      */
@@ -63,11 +65,39 @@ trait HasAuthenticator
     }
 
     /**
+     * Mark user's phone as verified.
+     */
+    public function markPhoneAsVerified(): bool
+    {
+        return $this->forceFill(['phone_verified_at' => now()])->save();
+    }
+
+    /**
      * Check if email is verified.
      */
     public function isEmailVerified(): bool
     {
         return !is_null($this->email_verified_at);
+    }
+
+    /**
+     * Mark user's email as verified.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        return $this->forceFill(['email_verified_at' => now()])->save();
+    }
+
+    /**
+     * Mark contact verified based on channel type.
+     */
+    public function markContactAsVerified(string $channel): bool
+    {
+        if (strtolower($channel) === 'email') {
+            return $this->markEmailAsVerified();
+        }
+
+        return $this->markPhoneAsVerified();
     }
 
     /*
@@ -93,7 +123,7 @@ trait HasAuthenticator
 
     public function otps(): HasMany
     {
-        return $this->hasMany(UserOtp::class, 'user_id');
+        return $this->hasMany(OtpCode::class, 'user_id');
     }
 
     public function socials(): HasMany

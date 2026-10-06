@@ -1,12 +1,12 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Modules\Auth\Services;
+namespace Ataurbdx\Authenticator\Modules\Authenticator\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class AuthService
+class AuthenticatorService
 {
     /**
      * Determine whether the given input is an email, phone, or username.
@@ -171,8 +171,8 @@ class AuthService
         ]);
 
         // Auto-create UserData record
-        if (class_exists(\Ataurbdx\Authenticator\Modules\Auth\Models\UserData::class)) {
-            \Ataurbdx\Authenticator\Modules\Auth\Models\UserData::create([
+        if (class_exists(\Ataurbdx\Authenticator\Modules\Authenticator\Models\UserData::class)) {
+            \Ataurbdx\Authenticator\Modules\Authenticator\Models\UserData::create([
                 'user_id' => $user->id,
                 'about'   => $data['about'] ?? null,
             ]);
@@ -186,11 +186,35 @@ class AuthService
             $token = $user->createToken('auth_token')->plainTextToken;
         }
 
+        // Check if registration verification is mandatory from Admin Settings
+        $requiresVerification = \Ataurbdx\Authenticator\Modules\Authenticator\Models\AuthenticatorSetting::isVerificationMandatory();
+        $verificationResult = null;
+
+        if ($requiresVerification && config('authenticator.modules.otp', true)) {
+            $contact = $user->email ?: $user->phone;
+            $channel = !empty($user->email) ? 'email' : 'phone';
+
+            if ($contact) {
+                try {
+                    $otpService = app('authenticator.otp');
+                    $verificationResult = $otpService->send(
+                        contact: $contact,
+                        purpose: 'registration',
+                        channel: $channel,
+                        userId: $user->id,
+                        verifiable: $user
+                    );
+                } catch (\Throwable) {}
+            }
+        }
+
         return [
-            'success' => true,
-            'message' => 'Registration successful.',
-            'user'    => $user,
-            'token'   => $token,
+            'success'               => true,
+            'message'               => $requiresVerification ? 'Registration successful. Please verify your account.' : 'Registration successful.',
+            'user'                  => $user,
+            'token'                 => $token,
+            'requires_verification' => $requiresVerification,
+            'verification'          => $verificationResult,
         ];
     }
 

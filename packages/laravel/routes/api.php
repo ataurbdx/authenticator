@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Ataurbdx\Authenticator\Http\Controllers\Api\Auth\AuthController;
-use Ataurbdx\Authenticator\Http\Controllers\Api\Auth\OtpController;
-use Ataurbdx\Authenticator\Http\Controllers\Api\Auth\TwoFactorController;
-use Ataurbdx\Authenticator\Http\Controllers\Api\Auth\PinController;
-use Ataurbdx\Authenticator\Http\Controllers\Api\Auth\SocialiteController;
+use Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator\AuthController;
+use Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator\OtpController;
+use Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator\TwoFactorController;
+use Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator\PinController;
+use Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator\SocialiteController;
 
 Route::prefix(config('authenticator.routes.api_prefix', 'api/v1/auth'))
     ->middleware(config('authenticator.routes.api_middleware', ['api']))
@@ -31,6 +31,7 @@ Route::prefix(config('authenticator.routes.api_prefix', 'api/v1/auth'))
             Route::prefix('otp')->group(function () {
                 Route::post('/send', [OtpController::class, 'send'])->name('authenticator.api.otp.send');
                 Route::post('/verify', [OtpController::class, 'verify'])->name('authenticator.api.otp.verify');
+                Route::post('/verify-link', [OtpController::class, 'verifyLink'])->name('authenticator.api.otp.verify-link');
                 Route::post('/login', [OtpController::class, 'loginWithOtp'])->name('authenticator.api.otp.login');
             });
         }

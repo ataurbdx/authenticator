@@ -55,7 +55,7 @@ class InstallAuthenticatorCommand extends Command
         ]);
 
         // 2. Publish Views and Assets based on Framework
-        $this->comment("Publishing {$framework} views directly to resources/views/auth/...");
+        $this->comment("Publishing {$framework} views directly to resources/views/authenticator/...");
         if ($framework === 'bootstrap') {
             $this->callSilent('vendor:publish', [
                 '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
@@ -97,9 +97,9 @@ class InstallAuthenticatorCommand extends Command
         $this->line('  1. Add [use HasAuthenticator;] to your App\\Models\\User model.');
         $this->line('  2. Visit [/account], [/sign-in], or [/sign-up] to test the Auth UI.');
         $this->line('  3. In your Blade templates, embed auth anywhere:');
-        $this->line('     - Sign-In Form:  @include(\'auth.forms.sign-in-form\')');
-        $this->line('     - Sign-Up Form:  @include(\'auth.forms.sign-up-form\')');
-        $this->line('     - Auth Modal:    @include(\'auth.auth-modal\') and trigger window.openAuthModal()');
+        $this->line('     - Sign-In Form:  @include(\'authenticator.forms.sign-in-form\')');
+        $this->line('     - Sign-Up Form:  @include(\'authenticator.forms.sign-up-form\')');
+        $this->line('     - Auth Modal:    @include(\'authenticator.auth-modal\') and trigger window.openAuthModal()');
         $this->line('  4. API endpoints are ready at [/api/v1/auth/*].');
 
         return self::SUCCESS;
@@ -161,7 +161,7 @@ class InstallAuthenticatorCommand extends Command
         
         $choices = [
             'core'   => 'Core Auth (users, user_data, password login, Bootstrap UI)',
-            'otp'    => 'OTP Verification (user_otps, email/phone verification, passwordless login)',
+            'otp'    => 'OTP Verification (otp_codes & otp_channels, universal purpose, multi-channel)',
             '2fa'    => 'Two-Factor Authentication (user_2fa, Google Authenticator TOTP)',
             'pin'    => 'PIN Content Lock (user_pins, screen lock privacy overlay)',
             'social' => 'Social Accounts (social_providers, user_socials, Google/Facebook OAuth)',

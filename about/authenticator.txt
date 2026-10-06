@@ -1,0 +1,55 @@
+AUTHENTICATOR — UNIVERSAL MODULAR AUTHENTICATION & SECURITY ENGINE
+==================================================================
+
+1. Core Authentication:
+   - Easy registration & login (works standalone without mandatory verification).
+   - Auto name-splitting & username handling.
+   - User metadata support (user_data).
+
+2. OTP & Direct Link Verification (Registration):
+   - Dynamic Email & Phone/SMS verification.
+   - 3 Delivery Modes: OTP Code, Direct Verification Link, or Hybrid Both in a single record.
+   - Verifying either code or link atomically resolves and burns the token.
+
+3. Passwordless Authentication:
+   - Fast login via 6-digit OTP code or Magic Direct Link without entering passwords.
+
+4. Two-Factor Authentication (2FA):
+   - TOTP standard (compatible with Google Authenticator, Authy, etc.).
+   - QR code setup, challenge middleware, and backup recovery codes.
+
+5. Socialite Multi-Account Integration:
+   - Connect multiple OAuth providers (Google, GitHub, Facebook, etc.) to a single user profile.
+   - Login seamlessly with any connected provider.
+
+6. PIN Security & Content Lock:
+   - 4 or 6 digit numeric security PIN for protecting sensitive areas, settings, or transactions.
+   - Auto-lock countdown timer, maximum retry attempt protection, and dedicated middleware ('authenticator.pin').
+
+7. Universal Polymorphic Verification (HasOtp Trait):
+   - Verification is not restricted to users; can be attached to any Eloquent model (e.g. Order confirmation, Invoice authorization, Vendor verification).
+
+8. Smart Identifier Auto-Detection:
+   - Single unified input automatically detects whether user entered Email, Phone, or Username.
+   - Automatic phone normalization with country code handling (+880).
+
+9. Fully Dynamic Settings (Zero Hardcoding):
+   - Database-driven settings (authenticator_settings) to toggle mandatory verification on/off from admin panel.
+   - Dynamic post-verification redirect routes and notice routes.
+   - Route verification guard middleware: ['auth', 'authenticator.verified'].
+
+10. Quick Password Reset:
+    - Reset passwords effortlessly using OTP code or direct link without bulky legacy email links.
+
+11. Active User Status Guard:
+    - Instant session termination and logout for deactivated or banned accounts ('authenticator.active' middleware).
+
+12. Dual UI Framework & Embeddable Blade Partials:
+    - Pre-built, customizable views in both Tailwind CSS and Bootstrap 5.
+    - Embeddable blade form partials (@include('authenticator.forms.*')).
+    - Drop-in AJAX Auth Modal triggerable anywhere via window.openAuthModal().
+
+13. On-Demand Modular Architecture:
+    - Granular module toggles (core, otp, 2fa, pin, social).
+    - Single-command interactive installer: php artisan authenticator:install.
+    - Clean organization grouped under 'Authenticator' namespace across Models, Controllers, Middleware, and Views.

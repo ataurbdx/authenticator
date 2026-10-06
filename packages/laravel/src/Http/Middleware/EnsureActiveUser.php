@@ -2,8 +2,8 @@
 
 namespace Ataurbdx\Authenticator\Http\Middleware;
 
-use Ataurbdx\Authenticator\Modules\Auth\Middleware\EnsureActiveUser as ModuleEnsureActiveUser;
+use Ataurbdx\Authenticator\Http\Middleware\Authenticator\EnsureActiveUser as BaseEnsureActiveUser;
 
-class EnsureActiveUser extends ModuleEnsureActiveUser
+class EnsureActiveUser extends BaseEnsureActiveUser
 {
 }

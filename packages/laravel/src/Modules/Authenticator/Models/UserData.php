@@ -1,6 +1,6 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Modules\Auth\Models;
+namespace Ataurbdx\Authenticator\Modules\Authenticator\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

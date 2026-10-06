@@ -1,6 +1,6 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Http\Controllers\Api\Auth;
+namespace Ataurbdx\Authenticator\Http\Controllers\Api\Authenticator;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
