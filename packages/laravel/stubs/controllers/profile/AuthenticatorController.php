@@ -1,80 +1,24 @@
 <?php
 
-namespace Ataurbdx\Authenticator\Http\Controllers\Web\Authenticator;
+namespace App\Http\Controllers\Authenticator;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class AuthenticatorController extends Controller
 {
-    /**
-     * Resolve view: prioritize published view in resources/views/authenticator, fallback to package view.
-     */
-    protected function renderAuthView(string $viewName, array $data = [])
-    {
-        if (view()->exists("authenticator.{$viewName}")) {
-            return view("authenticator.{$viewName}", $data);
-        }
-
-        return view("authenticator::{$viewName}", $data);
-    }
-
-    /**
-     * Show Account View (Step 1 Identifier Detection).
-     */
-    public function showAccount()
-    {
-        return $this->renderAuthView('account');
-    }
-
-    /**
-     * Show Sign-In View.
-     */
-    public function showSignIn()
-    {
-        return $this->renderAuthView('sign-in');
-    }
-
-    /**
-     * Show Sign-Up View.
-     */
-    public function showSignUp()
-    {
-        return $this->renderAuthView('sign-up');
-    }
-
-    /**
-     * Show Modal Partial View (for AJAX-rendered auth modals).
-     */
-    public function showAuthModal()
-    {
-        return $this->renderAuthView('auth-modal', [
-            'isModal'    => true,
-            'initialTab' => request('tab', 'account'),
-        ]);
-    }
-
-    /**
-     * Show Dashboard View.
-     */
     public function dashboard()
     {
-        return $this->renderAuthView('profile.dashboard');
+        return view('authenticator.profile.dashboard');
     }
 
-    /**
-     * Show Profile View.
-     */
     public function profile()
     {
-        return $this->renderAuthView('profile.profile');
+        return view('authenticator.profile.profile');
     }
 
-    /**
-     * Update Username.
-     */
     public function updateUsername(Request $request)
     {
         $user = auth()->user();
@@ -98,9 +42,6 @@ class AuthenticatorController extends Controller
         return back()->with('status', 'Username updated successfully.');
     }
 
-    /**
-     * Update Email.
-     */
     public function updateEmail(Request $request)
     {
         $user = auth()->user();
@@ -128,13 +69,11 @@ class AuthenticatorController extends Controller
         return back()->with('status', $msg);
     }
 
-    /**
-     * Update Phone.
-     */
     public function updatePhone(Request $request)
     {
         $user = auth()->user();
 
+        // Prepare phone from code and number before validation (same as SignupController)
         if ($request->filled('number')) {
             $cc = trim($request->input('code', '+880'));
             $num = ltrim($request->input('number'), '0');
@@ -178,9 +117,6 @@ class AuthenticatorController extends Controller
         return back()->with('status', $msg);
     }
 
-    /**
-     * Update Profile Information.
-     */
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
@@ -208,9 +144,6 @@ class AuthenticatorController extends Controller
         return back()->with('status', 'Profile details updated successfully.');
     }
 
-    /**
-     * Update Password.
-     */
     public function updatePassword(Request $request)
     {
         $user = auth()->user();

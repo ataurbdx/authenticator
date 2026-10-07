@@ -10,9 +10,11 @@ class InstallAuthenticatorCommand extends Command
      * The name and signature of the console command.
      */
     protected $signature = 'authenticator:install
-                            {--type= : Specific module to install (core, otp, 2fa, pin, social, all)}
+                            {--type= : Specific module to install (core, profile, otp, 2fa, pin, social, all)}
                             {--framework= : CSS Framework for Auth views (tailwind, bootstrap, all)}
-                            {--all : Install all 5 modules without interactive prompt}
+                            {--all : Install all modules without interactive prompt}
+                            {--core : Include Core Auth module}
+                            {--profile : Include Profile & Dashboard Portal module}
                             {--otp : Include OTP Verification module}
                             {--2fa : Include Two-Factor Authentication module}
                             {--pin : Include PIN Content Lock module}
@@ -21,7 +23,7 @@ class InstallAuthenticatorCommand extends Command
     /**
      * The console command description.
      */
-    protected $description = 'Install and configure Authenticator modules on-demand with Tailwind or Bootstrap 5 views';
+    protected $description = 'Install and configure Authenticator modules on-demand with ready-made Controllers, Blade Views, Routes, and Migrations';
 
     /**
      * Execute the console command.
@@ -29,7 +31,7 @@ class InstallAuthenticatorCommand extends Command
     public function handle(): int
     {
         $this->info('====================================================');
-        $this->info('  🚀  AUTHENTICATOR — ON-DEMAND MODULAR INSTALLER  ');
+        $this->info('  🚀  AUTHENTICATOR — MODULAR SUITE INSTALLER       ');
         $this->info('====================================================');
 
         // Determine which modules to install
@@ -46,47 +48,39 @@ class InstallAuthenticatorCommand extends Command
         $this->info("Selected UI Framework: " . strtoupper($framework));
         $this->line('');
 
-        // 1. Publish Master Config
-        $this->comment('Publishing master configuration...');
+        // 1. Publish Master Config & Common Assets
+        $this->comment('Publishing master configuration & frontend assets...');
         $this->callSilent('vendor:publish', [
             '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
             '--tag'      => 'authenticator-config',
             '--force'    => true,
         ]);
-
-        // 2. Publish Views and Assets based on Framework
-        $this->comment("Publishing {$framework} views directly to resources/views/authenticator/...");
-        if ($framework === 'bootstrap') {
-            $this->callSilent('vendor:publish', [
-                '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
-                '--tag'      => 'authenticator-views-bootstrap',
-                '--force'    => true,
-            ]);
-        } else {
-            $this->callSilent('vendor:publish', [
-                '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
-                '--tag'      => 'authenticator-views-tailwind',
-                '--force'    => true,
-            ]);
-        }
         $this->callSilent('vendor:publish', [
             '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
             '--tag'      => 'authenticator-assets',
             '--force'    => true,
         ]);
+        $this->callSilent('vendor:publish', [
+            '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
+            '--tag'      => 'authenticator-service',
+            '--force'    => true,
+        ]);
 
-        // 3. Publish Module Migrations based on selected tags
+        // 2. Publish Module-by-Module Components (Controllers, Views, Routes, Migrations)
         foreach ($selectedModules as $module) {
-            $tag = "migrations-{$module}";
-            $this->comment("Publishing migrations for module [{$module}]...");
+            $this->comment("Publishing module components for [{$module}] (Controllers, Views, Routes, Migrations)...");
+
+            // Publish module bundle
             $this->callSilent('vendor:publish', [
                 '--provider' => 'Ataurbdx\Authenticator\AuthenticatorServiceProvider',
-                '--tag'      => $tag,
+                '--tag'      => "authenticator-{$module}",
+                '--force'    => true,
             ]);
         }
 
-        // 4. Ask to run migrations
-        if ($this->confirm('Would you like to run the published database migrations now?', true)) {
+        // 3. Ask to run migrations
+        $this->line('');
+        if ($this->confirm('Would you like to run the database migrations now?', true)) {
             $this->info('Running php artisan migrate...');
             $this->call('migrate');
         }
@@ -94,13 +88,11 @@ class InstallAuthenticatorCommand extends Command
         $this->line('');
         $this->info('🎉 Authenticator installed successfully!');
         $this->info('Next steps:');
-        $this->line('  1. Add [use HasAuthenticator;] to your App\\Models\\User model.');
+        $this->line('  1. Add [use Ataurbdx\\Authenticator\\Traits\\HasAuthenticator;] to your App\\Models\\User model.');
         $this->line('  2. Visit [/account], [/sign-in], or [/sign-up] to test the Auth UI.');
-        $this->line('  3. In your Blade templates, embed auth anywhere:');
-        $this->line('     - Sign-In Form:  @include(\'authenticator.forms.sign-in-form\')');
-        $this->line('     - Sign-Up Form:  @include(\'authenticator.forms.sign-up-form\')');
-        $this->line('     - Auth Modal:    @include(\'authenticator.auth-modal\') and trigger window.openAuthModal()');
-        $this->line('  4. API endpoints are ready at [/api/v1/auth/*].');
+        $this->line('  3. Visit [/dashboard] or [/profile] to test the User Portal.');
+        $this->line('  4. Routes published inside [routes/authenticator/] are ready to customize.');
+        $this->line('  5. Controllers published inside [app/Http/Controllers/Authenticator/] are ready to customize.');
 
         return self::SUCCESS;
     }
@@ -119,11 +111,7 @@ class InstallAuthenticatorCommand extends Command
             return 'tailwind';
         }
 
-        return $this->choice(
-            'Which CSS framework should Authenticator UI use?',
-            ['tailwind' => 'Tailwind CSS (Modern Dark/Light)', 'bootstrap' => 'Bootstrap 5 (Clean Glassmorphic)', 'all' => 'Both'],
-            'tailwind'
-        );
+        return 'tailwind';
     }
 
     /**
@@ -133,38 +121,39 @@ class InstallAuthenticatorCommand extends Command
     {
         // 1. Full suite shortcut
         if ($this->option('all') || $this->option('type') === 'all') {
-            return ['core', 'pin', 'otp', '2fa', 'social'];
+            return ['core', 'profile', 'otp', '2fa', 'pin', 'social'];
         }
 
-        // 2. Comma-separated types (e.g. --type=core,otp,pin)
+        // 2. Comma-separated types (e.g. --type=core,profile,otp)
         if ($type = $this->option('type')) {
             $types = array_map('trim', explode(',', strtolower($type)));
             if (!in_array('core', $types)) {
-                array_unshift($types, 'core'); // Core is always required
+                array_unshift($types, 'core');
             }
             return array_unique($types);
         }
 
         // 3. Check individual flags
-        $modules = ['core']; // Always include core
+        $modules = ['core', 'profile']; // Default core and profile
         if ($this->option('otp')) $modules[] = 'otp';
         if ($this->option('2fa')) $modules[] = '2fa';
         if ($this->option('pin')) $modules[] = 'pin';
         if ($this->option('social')) $modules[] = 'social';
 
-        if (count($modules) > 1) {
-            return $modules;
+        if (count($modules) > 2) {
+            return array_unique($modules);
         }
 
         // 4. Interactive choice
         $this->info('Select which modules you wish to enable for this project:');
         
         $choices = [
-            'core'   => 'Core Auth (users, user_data, password login, Bootstrap UI)',
-            'otp'    => 'OTP Verification (otp_codes & otp_channels, universal purpose, multi-channel)',
-            '2fa'    => 'Two-Factor Authentication (user_2fa, Google Authenticator TOTP)',
-            'pin'    => 'PIN Content Lock (user_pins, screen lock privacy overlay)',
-            'social' => 'Social Accounts (social_providers, user_socials, Google/Facebook OAuth)',
+            'core'    => 'Core Auth (users, sign-in, sign-up, account gateway, password reset)',
+            'profile' => 'User Portal (dashboard, profile management, 5 isolated credential forms)',
+            'otp'     => 'OTP Verification (otp_codes, verify views, multi-channel)',
+            '2fa'     => 'Two-Factor Authentication (user_2fa, TOTP QR setup, challenge)',
+            'pin'     => 'PIN Content Lock (user_pins, screen lock privacy overlay)',
+            'social'  => 'Social Accounts (OAuth providers, dynamic callback handlers)',
         ];
 
         $selected = $this->choice(
@@ -175,7 +164,7 @@ class InstallAuthenticatorCommand extends Command
             true
         );
 
-        $result = ['core'];
+        $result = ['core', 'profile'];
         foreach ($selected as $item) {
             foreach ($choices as $key => $label) {
                 if ($item === $label) {

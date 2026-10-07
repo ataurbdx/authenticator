@@ -12,12 +12,22 @@ return [
     |
     */
     'modules' => [
-        'core'   => true,
-        'otp'    => env('AUTH_MODULE_OTP', true),
-        '2fa'    => env('AUTH_MODULE_2FA', true),
-        'pin'    => env('AUTH_MODULE_PIN', true),
-        'social' => env('AUTH_MODULE_SOCIAL', true),
+        'core'    => true,
+        'profile' => true,
+        'otp'     => env('AUTH_MODULE_OTP', true),
+        '2fa'     => env('AUTH_MODULE_2FA', true),
+        'pin'     => env('AUTH_MODULE_PIN', true),
+        'social'  => env('AUTH_MODULE_SOCIAL', true),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redirection Configuration
+    |--------------------------------------------------------------------------
+    | Default redirection path after successful sign-in or signup.
+    |
+    */
+    'redirect_to' => env('AUTH_REDIRECT_TO', '/dashboard'),
 
     /*
     |--------------------------------------------------------------------------
@@ -29,7 +39,7 @@ return [
     'routes' => [
         'api_prefix'     => 'api/v1/auth',
         'api_middleware' => ['api'],
-        'web_prefix'     => 'auth',
+        'web_prefix'     => '',
         'web_middleware' => ['web'],
     ],
 
@@ -37,7 +47,7 @@ return [
     |--------------------------------------------------------------------------
     | UI Presentation Framework & Theme
     |--------------------------------------------------------------------------
-    | Supports both Tailwind CSS (default, modeled after asset-sheba) and
+    | Supports both Tailwind CSS (default, dark glassmorphic) and
     | Bootstrap 5. Change 'framework' to 'bootstrap' or 'tailwind'.
     |
     */
@@ -59,10 +69,10 @@ return [
         'user_pins'        => 'user_pins',
         'otp_codes'        => 'otp_codes',
         'otp_channels'     => 'otp_channels',
-        'user_2fa'              => 'user_2fa',
-        'user_socials'          => 'user_socials',
-        'social_providers'      => 'social_providers',
-        'settings'              => 'authenticator_settings',
+        'user_2fa'         => 'user_2fa',
+        'user_socials'     => 'user_socials',
+        'social_providers' => 'social_providers',
+        'settings'         => 'authenticator_settings',
     ],
 
     /*
@@ -80,21 +90,14 @@ return [
         'email_subject'        => env('AUTH_OTP_EMAIL_SUBJECT', 'Your Security Verification Code'),
         'debug_in_dev'         => env('APP_DEBUG', true),
 
-        // Default Delivery Mode: 'code', 'link', or 'both' (Dynamically controlled via 'authenticator_settings' or 'otp_channels' table)
+        // Default Delivery Mode: 'code', 'link', or 'both'
         'default_mode'            => env('AUTH_VERIFICATION_MODE', 'both'),
         'link_expiration_minutes' => env('AUTH_VERIFICATION_LINK_EXPIRY', 60),
 
         // Optional Shortlink Generator hook/closure/service (null defaults to standard full URL)
         'shortener'            => null,
-
-        // Fallback Channel Modes (Dynamically resolved from 'otp_channels' table or 'authenticator_settings' DB)
         'channel_modes'        => [],
-
-        // Dynamic Action-to-Table Mapping (Hybrid purpose routing)
-        'action_tables'        => [
-            // 'vault_access'   => 'admin_otps',
-            // 'order_approval' => 'order_otps',
-        ],
+        'action_tables'        => [],
     ],
 
     /*
@@ -107,8 +110,8 @@ return [
     */
     'verification' => [
         'mandatory'                   => env('AUTH_VERIFICATION_MANDATORY', false),
-        'notice_route'                => env('AUTH_VERIFICATION_NOTICE_ROUTE', 'authenticator.web.verify-otp'),
-        'redirect_after_verification' => env('AUTH_VERIFICATION_REDIRECT', null), // null dynamically resolves to dashboard / home / '/'
+        'notice_route'                => env('AUTH_VERIFICATION_NOTICE_ROUTE', 'authenticator.otp.verify'),
+        'redirect_after_verification' => env('AUTH_VERIFICATION_REDIRECT', '/dashboard'),
     ],
 
     /*

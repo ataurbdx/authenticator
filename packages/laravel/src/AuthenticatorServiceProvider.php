@@ -20,7 +20,10 @@ class AuthenticatorServiceProvider extends ServiceProvider
 
         // Bind main services
         $this->app->singleton('authenticator.auth', function ($app) {
-            return new \Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService();
+            return new \Ataurbdx\Authenticator\Services\AuthenticatorService();
+        });
+        $this->app->singleton(\Ataurbdx\Authenticator\Services\AuthenticatorService::class, function ($app) {
+            return $app['authenticator.auth'];
         });
         $this->app->singleton(\Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService::class, function ($app) {
             return $app['authenticator.auth'];
@@ -74,91 +77,260 @@ class AuthenticatorServiceProvider extends ServiceProvider
 
         // 4. Register Publishable Assets (Console)
         if ($this->app->runningInConsole()) {
-            // Config
+
+            // ==========================================
+            // Config & Assets & Service
+            // ==========================================
             $this->publishes([
                 __DIR__ . '/../config/authenticator.php' => config_path('authenticator.php'),
             ], 'authenticator-config');
 
-            // Views (Active Framework published directly to resources/views/authenticator - No vendor folder)
             $this->publishes([
-                (is_dir($frameworkViewPath) ? $frameworkViewPath : __DIR__ . '/../resources/views/authenticator/tailwind') => resource_path('views/authenticator'),
-            ], 'authenticator-views');
-
-            // Views (Tailwind Specific directly to resources/views/authenticator)
-            $this->publishes([
-                __DIR__ . '/../resources/views/authenticator/tailwind' => resource_path('views/authenticator'),
-            ], 'authenticator-views-tailwind');
-
-            // Views (Bootstrap Specific directly to resources/views/authenticator)
-            $this->publishes([
-                __DIR__ . '/../resources/views/authenticator/bootstrap' => resource_path('views/authenticator'),
-            ], 'authenticator-views-bootstrap');
-
-            // Assets (JS bridge)
-            $this->publishes([
-                __DIR__ . '/../resources/js' => public_path('vendor/authenticator/js'),
+                __DIR__ . '/../resources/js/authenticator.js' => public_path('vendor/authenticator/js/authenticator.js'),
             ], 'authenticator-assets');
 
-            // Models (App\Models\Authenticator)
             $this->publishes([
-                __DIR__ . '/Modules/Authenticator/Models' => app_path('Models/Authenticator'),
-            ], 'authenticator-models');
+                __DIR__ . '/Services/AuthenticatorService.php' => app_path('Services/AuthenticatorService.php'),
+            ], 'authenticator-service');
 
-            // Controllers (App\Http\Controllers\Authenticator)
-            $this->publishes([
-                __DIR__ . '/Http/Controllers/Web/Authenticator' => app_path('Http/Controllers/Authenticator/Web'),
-                __DIR__ . '/Http/Controllers/Api/Authenticator' => app_path('Http/Controllers/Authenticator/Api'),
-            ], 'authenticator-controllers');
-
-            // Middleware (App\Http\Middleware\Authenticator)
-            $this->publishes([
-                __DIR__ . '/Http/Middleware/Authenticator' => app_path('Http/Middleware/Authenticator'),
-            ], 'authenticator-middleware');
-
-            // Granular Migration Publishing by Module (Translator style):
-            // 1. Core Auth Migrations
-            $this->publishes([
+            // ==========================================
+            // MODULE 1: CORE AUTH
+            // ==========================================
+            // Core Migrations
+            $coreMigrations = [
                 __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000001_create_users_table.php' => database_path('migrations/2026_01_01_000001_create_users_table.php'),
                 __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000002_create_user_data_table.php' => database_path('migrations/2026_01_01_000002_create_user_data_table.php'),
                 __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000009_create_authenticator_settings_table.php' => database_path('migrations/2026_01_01_000009_create_authenticator_settings_table.php'),
-            ], 'migrations-core');
+            ];
+            $this->publishes($coreMigrations, 'migrations-core');
 
-            // 2. PIN Migrations
-            $this->publishes([
-                __DIR__ . '/Modules/Pin/Migrations/2026_01_01_000003_create_user_pins_table.php' => database_path('migrations/2026_01_01_000003_create_user_pins_table.php'),
-            ], 'migrations-pin');
+            // Core Controllers
+            $coreControllers = [
+                __DIR__ . '/../stubs/controllers/core/AccountController.php' => app_path('Http/Controllers/Authenticator/AccountController.php'),
+                __DIR__ . '/../stubs/controllers/core/SigninController.php' => app_path('Http/Controllers/Authenticator/SigninController.php'),
+                __DIR__ . '/../stubs/controllers/core/SignupController.php' => app_path('Http/Controllers/Authenticator/SignupController.php'),
+                __DIR__ . '/../stubs/controllers/core/ForgotPasswordController.php' => app_path('Http/Controllers/Authenticator/ForgotPasswordController.php'),
+                __DIR__ . '/../stubs/controllers/core/ResetPasswordController.php' => app_path('Http/Controllers/Authenticator/ResetPasswordController.php'),
+            ];
+            $this->publishes($coreControllers, 'authenticator-core-controllers');
 
-            // 3. OTP Migrations
-            $this->publishes([
+            // Core Views
+            $coreViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/layout.blade.php' => resource_path('views/authenticator/layout.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/account.blade.php' => resource_path('views/authenticator/account.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/sign-in.blade.php' => resource_path('views/authenticator/sign-in.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/sign-up.blade.php' => resource_path('views/authenticator/sign-up.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/nav-tabs.blade.php' => resource_path('views/authenticator/nav-tabs.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/social-btn.blade.php' => resource_path('views/authenticator/social-btn.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/forgot-password.blade.php' => resource_path('views/authenticator/forgot-password.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/reset-password.blade.php' => resource_path('views/authenticator/reset-password.blade.php'),
+            ];
+            $this->publishes($coreViews, 'authenticator-core-views');
+
+            // Core Routes
+            $coreRoutes = [
+                __DIR__ . '/../routes/core.php' => base_path('routes/authenticator/core.php'),
+            ];
+            $this->publishes($coreRoutes, 'authenticator-core-routes');
+
+            // Core Full Module Aggregate
+            $this->publishes(array_merge(
+                $coreMigrations,
+                $coreControllers,
+                $coreViews,
+                $coreRoutes,
+                [
+                    __DIR__ . '/../config/authenticator.php' => config_path('authenticator.php'),
+                    __DIR__ . '/../resources/js/authenticator.js' => public_path('vendor/authenticator/js/authenticator.js'),
+                    __DIR__ . '/Services/AuthenticatorService.php' => app_path('Services/AuthenticatorService.php'),
+                ]
+            ), 'authenticator-core');
+
+            // ==========================================
+            // MODULE 2: PROFILE & PORTAL
+            // ==========================================
+            // Profile Controllers
+            $profileControllers = [
+                __DIR__ . '/../stubs/controllers/profile/AuthenticatorController.php' => app_path('Http/Controllers/Authenticator/AuthenticatorController.php'),
+            ];
+            $this->publishes($profileControllers, 'authenticator-profile-controllers');
+
+            // Profile Views
+            $profileViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/profile' => resource_path('views/authenticator/profile'),
+            ];
+            $this->publishes($profileViews, 'authenticator-profile-views');
+
+            // Profile Routes
+            $profileRoutes = [
+                __DIR__ . '/../routes/profile.php' => base_path('routes/authenticator/profile.php'),
+            ];
+            $this->publishes($profileRoutes, 'authenticator-profile-routes');
+
+            // Profile Full Module Aggregate
+            $this->publishes(array_merge(
+                $profileControllers,
+                $profileViews,
+                $profileRoutes
+            ), 'authenticator-profile');
+
+            // ==========================================
+            // MODULE 3: OTP VERIFICATION
+            // ==========================================
+            // OTP Migrations
+            $otpMigrations = [
                 __DIR__ . '/Modules/Otp/Migrations/2026_01_01_000004_create_otp_codes_table.php' => database_path('migrations/2026_01_01_000004_create_otp_codes_table.php'),
                 __DIR__ . '/Modules/Otp/Migrations/2026_01_01_000008_create_otp_channels_table.php' => database_path('migrations/2026_01_01_000008_create_otp_channels_table.php'),
-            ], 'migrations-otp');
+            ];
+            $this->publishes($otpMigrations, 'migrations-otp');
 
-            // 4. TwoFactor (2FA) Migrations
-            $this->publishes([
+            // OTP Controllers
+            $otpControllers = [
+                __DIR__ . '/../stubs/controllers/otp/OtpVerificationController.php' => app_path('Http/Controllers/Authenticator/OtpVerificationController.php'),
+            ];
+            $this->publishes($otpControllers, 'authenticator-otp-controllers');
+
+            // OTP Views
+            $otpViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/verify.blade.php' => resource_path('views/authenticator/verify.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/otp' => resource_path('views/authenticator/otp'),
+            ];
+            $this->publishes($otpViews, 'authenticator-otp-views');
+
+            // OTP Routes
+            $otpRoutes = [
+                __DIR__ . '/../routes/otp.php' => base_path('routes/authenticator/otp.php'),
+            ];
+            $this->publishes($otpRoutes, 'authenticator-otp-routes');
+
+            // OTP Full Module Aggregate
+            $this->publishes(array_merge(
+                $otpMigrations,
+                $otpControllers,
+                $otpViews,
+                $otpRoutes
+            ), 'authenticator-otp');
+
+            // ==========================================
+            // MODULE 4: TWO-FACTOR (2FA)
+            // ==========================================
+            $twoFactorMigrations = [
                 __DIR__ . '/Modules/TwoFactor/Migrations/2026_01_01_000005_create_user_2fa_table.php' => database_path('migrations/2026_01_01_000005_create_user_2fa_table.php'),
-            ], 'migrations-2fa');
+            ];
+            $this->publishes($twoFactorMigrations, 'migrations-2fa');
 
-            // 5. Socialite Migrations
-            $this->publishes([
-                __DIR__ . '/Modules/Socialite/Migrations/2026_01_01_000006_create_social_providers_table.php' => database_path('migrations/2026_01_01_000006_create_social_providers_table.php'),
-                __DIR__ . '/Modules/Socialite/Migrations/2026_01_01_000007_create_user_socials_table.php' => database_path('migrations/2026_01_01_000007_create_user_socials_table.php'),
-            ], 'migrations-social');
+            $twoFactorControllers = [
+                __DIR__ . '/../stubs/controllers/2fa/TwoFactorController.php' => app_path('Http/Controllers/Authenticator/TwoFactorController.php'),
+            ];
+            $this->publishes($twoFactorControllers, 'authenticator-2fa-controllers');
 
-            // All migrations combined
-            $this->publishes([
-                __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000001_create_users_table.php' => database_path('migrations/2026_01_01_000001_create_users_table.php'),
-                __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000002_create_user_data_table.php' => database_path('migrations/2026_01_01_000002_create_user_data_table.php'),
+            $twoFactorViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/two-factor' => resource_path('views/authenticator/two-factor'),
+            ];
+            $this->publishes($twoFactorViews, 'authenticator-2fa-views');
+
+            $twoFactorRoutes = [
+                __DIR__ . '/../routes/2fa.php' => base_path('routes/authenticator/2fa.php'),
+            ];
+            $this->publishes($twoFactorRoutes, 'authenticator-2fa-routes');
+
+            $this->publishes(array_merge(
+                $twoFactorMigrations,
+                $twoFactorControllers,
+                $twoFactorViews,
+                $twoFactorRoutes
+            ), 'authenticator-2fa');
+
+            // ==========================================
+            // MODULE 5: PIN CONTENT LOCK
+            // ==========================================
+            $pinMigrations = [
                 __DIR__ . '/Modules/Pin/Migrations/2026_01_01_000003_create_user_pins_table.php' => database_path('migrations/2026_01_01_000003_create_user_pins_table.php'),
-                __DIR__ . '/Modules/Otp/Migrations/2026_01_01_000004_create_otp_codes_table.php' => database_path('migrations/2026_01_01_000004_create_otp_codes_table.php'),
-                __DIR__ . '/Modules/Otp/Migrations/2026_01_01_000008_create_otp_channels_table.php' => database_path('migrations/2026_01_01_000008_create_otp_channels_table.php'),
-                __DIR__ . '/Modules/TwoFactor/Migrations/2026_01_01_000005_create_user_2fa_table.php' => database_path('migrations/2026_01_01_000005_create_user_2fa_table.php'),
+            ];
+            $this->publishes($pinMigrations, 'migrations-pin');
+
+            $pinControllers = [
+                __DIR__ . '/../stubs/controllers/pin/PinController.php' => app_path('Http/Controllers/Authenticator/PinController.php'),
+            ];
+            $this->publishes($pinControllers, 'authenticator-pin-controllers');
+
+            $pinViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/pin' => resource_path('views/authenticator/pin'),
+            ];
+            $this->publishes($pinViews, 'authenticator-pin-views');
+
+            $pinRoutes = [
+                __DIR__ . '/../routes/pin.php' => base_path('routes/authenticator/pin.php'),
+            ];
+            $this->publishes($pinRoutes, 'authenticator-pin-routes');
+
+            $this->publishes(array_merge(
+                $pinMigrations,
+                $pinControllers,
+                $pinViews,
+                $pinRoutes
+            ), 'authenticator-pin');
+
+            // ==========================================
+            // MODULE 6: SOCIALITE
+            // ==========================================
+            $socialMigrations = [
                 __DIR__ . '/Modules/Socialite/Migrations/2026_01_01_000006_create_social_providers_table.php' => database_path('migrations/2026_01_01_000006_create_social_providers_table.php'),
                 __DIR__ . '/Modules/Socialite/Migrations/2026_01_01_000007_create_user_socials_table.php' => database_path('migrations/2026_01_01_000007_create_user_socials_table.php'),
-                __DIR__ . '/Modules/Authenticator/Migrations/2026_01_01_000009_create_authenticator_settings_table.php' => database_path('migrations/2026_01_01_000009_create_authenticator_settings_table.php'),
-            ], 'authenticator-migrations');
+            ];
+            $this->publishes($socialMigrations, 'migrations-social');
 
-            // Register artisan commands
+            $socialControllers = [
+                __DIR__ . '/../stubs/controllers/social/SocialiteController.php' => app_path('Http/Controllers/Authenticator/SocialiteController.php'),
+            ];
+            $this->publishes($socialControllers, 'authenticator-social-controllers');
+
+            $socialViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/socialite' => resource_path('views/authenticator/socialite'),
+            ];
+            $this->publishes($socialViews, 'authenticator-social-views');
+
+            $socialRoutes = [
+                __DIR__ . '/../routes/social.php' => base_path('routes/authenticator/social.php'),
+            ];
+            $this->publishes($socialRoutes, 'authenticator-social-routes');
+
+            $this->publishes(array_merge(
+                $socialMigrations,
+                $socialControllers,
+                $socialViews,
+                $socialRoutes
+            ), 'authenticator-social');
+
+            // ==========================================
+            // GLOBAL AGGREGATE TAGS
+            // ==========================================
+            $allControllers = array_merge($coreControllers, $profileControllers, $otpControllers, $twoFactorControllers, $pinControllers, $socialControllers);
+            $this->publishes($allControllers, 'authenticator-controllers');
+
+            $allViews = array_merge($coreViews, $profileViews, $otpViews, $twoFactorViews, $pinViews, $socialViews);
+            $this->publishes($allViews, 'authenticator-views');
+
+            $allRoutes = array_merge($coreRoutes, $profileRoutes, $otpRoutes, $twoFactorRoutes, $pinRoutes, $socialRoutes);
+            $this->publishes($allRoutes, 'authenticator-routes');
+
+            $allMigrations = array_merge($coreMigrations, $otpMigrations, $twoFactorMigrations, $pinMigrations, $socialMigrations);
+            $this->publishes($allMigrations, 'authenticator-migrations');
+
+            // Master Everything Tag
+            $this->publishes(array_merge(
+                [
+                    __DIR__ . '/../config/authenticator.php' => config_path('authenticator.php'),
+                    __DIR__ . '/../resources/js/authenticator.js' => public_path('vendor/authenticator/js/authenticator.js'),
+                    __DIR__ . '/Services/AuthenticatorService.php' => app_path('Services/AuthenticatorService.php'),
+                ],
+                $allControllers,
+                $allViews,
+                $allRoutes,
+                $allMigrations
+            ), 'authenticator-all');
+
+            // Register artisan installer command
             $this->commands([
                 InstallAuthenticatorCommand::class,
             ]);

@@ -28,6 +28,57 @@ class AuthenticatorService
     }
 
     /**
+     * Determine if the identifier is an email, phone, or username.
+     */
+    public function determineIdentifierType(string $identifier): string
+    {
+        return $this->detectIdentifierType($identifier);
+    }
+
+    /**
+     * Attempt to sign the user in using email, phone, or username.
+     */
+    public function attemptSignin(string $identifier, string $password, bool $remember = false): bool
+    {
+        $result = $this->attempt($identifier, $password, $remember);
+        return !empty($result['success']);
+    }
+
+    /**
+     * Check if a user exists based on an identifier and return user and type.
+     */
+    public function checkUserExists(string $identifier): array
+    {
+        $type = $this->detectIdentifierType($identifier);
+        $user = $this->findByIdentifier($identifier);
+
+        return [
+            'user'       => $user,
+            'type'       => $type,
+            'identifier' => $identifier
+        ];
+    }
+
+    /**
+     * Create a new user record.
+     */
+    public function createUser(array $data, ?array $phoneData = null)
+    {
+        $userModel = config('auth.providers.users.model', 'App\\Models\\User');
+
+        return $userModel::create([
+            'first_name' => $data['first_name'] ?? null,
+            'last_name'  => $data['last_name'] ?? null,
+            'username'   => $data['username'] ?? null,
+            'email'      => !empty($data['email']) ? strtolower(trim($data['email'])) : null,
+            'phone'      => $data['phone'] ?? null,
+            'phone_data' => $phoneData ? json_encode($phoneData) : null,
+            'password'   => !empty($data['password']) ? Hash::make($data['password']) : null,
+        ]);
+    }
+
+
+    /**
      * Normalize phone numbers (stripping spaces, handling country codes).
      */
     public function normalizePhone(string $phone, string $countryCode = '+880'): string

@@ -1,61 +1,105 @@
-@extends('authenticator::layout')
+@extends('authenticator.layout')
 
-@section('title', 'Account — ' . config('app.name', 'Authenticator'))
+@section('title', 'Account — Authenticator')
 
 @section('content')
-<!-- Auth Page Card (Tailwind) -->
-<div class="relative w-full max-w-4xl lg:max-w-[900px] bg-white dark:bg-[#0b132b] rounded-[32px] overflow-hidden border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.12)] grid grid-cols-1 lg:grid-cols-2 max-h-[90vh] h-[560px] js-auth-container"
-     data-auth-source="page">
-    
-    <!-- Left Banner Side -->
-    <div class="hidden lg:flex relative overflow-hidden items-center justify-center bg-[#070624] w-full h-full min-h-0 p-8 flex-col text-center">
-        <div class="relative z-10 space-y-4">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-theme-primary/20 border border-theme-primary/40 flex items-center justify-center text-theme-primary text-3xl">
-                <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <h3 class="text-2xl font-black text-white tracking-tight">Smart Identification</h3>
-            <p class="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                Enter your email, username, or phone number to sign in or create a new account seamlessly.
-            </p>
-        </div>
-        <!-- Decorative Glow -->
-        <div class="absolute -top-24 -left-24 w-72 h-72 bg-theme-primary/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
-    </div>
+    <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/50">
+        <!-- Reusable Tab Navigation -->
+        @include('authenticator.nav-tabs', ['activeTab' => 'account'])
 
-    <!-- Right Form Side -->
-    <div class="p-6 sm:p-8 flex flex-col justify-between bg-white dark:bg-[#0b132b] relative h-full min-h-0 overflow-y-auto">
-        <div>
+        <div class="auth-form-wrapper space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-white/10">
-                <div>
-                    <h4 class="text-lg font-black text-slate-900 dark:text-white">Account Access</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Quick smart identifier lookup</p>
+            <div class="text-center sm:text-left">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Find Your Account</h1>
+                <p class="text-sm text-slate-400 mt-1.5">Choose how you'd like to get started with your account</p>
+            </div>
+
+            <!-- Alert / Feedback Notification -->
+            <div class="auth-gateway-feedback hidden p-4 rounded-xl text-sm transition-all flex items-center gap-3">
+                <div class="auth-feedback-icon text-base shrink-0"></div>
+                <div class="auth-feedback-text text-xs sm:text-sm font-medium"></div>
+            </div>
+
+            <!-- Initial Action Buttons (Email / Phone / Username - Find with ...) -->
+            <div class="auth-methods-selection space-y-3" data-current-type="email">
+                <button type="button" data-method="email"
+                    class="auth-method-btn group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
+                    <i class="fa-regular fa-envelope text-emerald-400 text-base group-hover:scale-110 transition-transform"></i>
+                    <span class="text-slate-200 group-hover:text-white">Email</span>
+                </button>
+
+                <button type="button" data-method="phone"
+                    class="auth-method-btn group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
+                    <i class="fa-solid fa-phone text-teal-400 text-base group-hover:scale-110 transition-transform"></i>
+                    <span class="text-slate-200 group-hover:text-white">Phone</span>
+                </button>
+
+                <button type="button" data-method="username"
+                    class="auth-method-btn group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
+                    <i class="fa-regular fa-user text-sky-400 text-base group-hover:scale-110 transition-transform"></i>
+                    <span class="text-slate-200 group-hover:text-white">Username</span>
+                </button>
+            </div>
+
+            <!-- Interactive Input Form (Shown when Email, Phone or Username is selected) -->
+            <div class="auth-form-container hidden space-y-4">
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <span class="auth-input-title font-semibold uppercase tracking-wider text-slate-300">
+                        Email Address
+                    </span>
+                    <button type="button"
+                        class="auth-change-method-btn text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none">
+                        <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                        <span>Change method</span>
+                    </button>
                 </div>
+
+                <form class="auth-gateway-form space-y-4" 
+                      data-action-url="{{ route('authenticator.check-identifier') }}"
+                      data-signin-url="{{ route('authenticator.sign-in') }}"
+                      data-signup-url="{{ route('authenticator.sign-up') }}">
+                    @csrf
+                    <div class="flex gap-2">
+                        <div class="auth-country-code-wrap hidden relative w-1/3 sm:w-1/4 transition-all">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-500">
+                                <i class="fa-solid fa-globe text-sm"></i>
+                            </div>
+                            <input type="text" name="code" value="+880" placeholder="+880"
+                                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3 pl-8 pr-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-center font-medium">
+                        </div>
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                                <i class="auth-input-icon fa-regular fa-envelope"></i>
+                            </div>
+                            <input type="text" class="auth-identifier-input w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium" name="identifier" required autocomplete="off"
+                                placeholder="Enter your email address"
+                                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                        class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-sm shadow-md shadow-emerald-700/20 hover:shadow-emerald-700/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span class="btn-text">Find Account & Continue</span>
+                        <i class="btn-icon fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
             </div>
 
-            <!-- Alerts -->
-            @include('authenticator::partials.alerts')
+            <!-- Divider: Social Providers -->
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-slate-800"></div>
+                <span class="flex-shrink mx-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Or continue with
+                </span>
+                <div class="flex-grow border-t border-slate-800"></div>
+            </div>
 
-            <!-- Form -->
-            @include('authenticator::forms.account-form')
-        </div>
-
-        <!-- Social + Footer -->
-        <div class="mt-4">
-            @include('authenticator::partials.social-buttons')
-
-            <div class="flex justify-center gap-4 pt-3 text-xs text-slate-500 dark:text-slate-400">
-                <a href="{{ route('authenticator.web.sign-in') }}" class="font-bold text-theme-primary hover:underline no-underline">
-                    Direct Sign In
-                </a>
-                <span>•</span>
-                <a href="{{ route('authenticator.web.sign-up') }}" class="font-bold text-theme-primary hover:underline no-underline">
-                    Create Account
-                </a>
+            <!-- Social Buttons -->
+            <div class="social-login-section">
+                @include('authenticator.social-btn')
             </div>
         </div>
+
     </div>
-
-</div>
 @endsection

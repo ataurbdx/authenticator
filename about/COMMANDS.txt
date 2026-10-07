@@ -1,4 +1,4 @@
-AUTHENTICATOR — CORE COMMANDS REFERENCE
+AUTHENTICATOR — CORE COMMANDS & PUBLISH REFERENCE
 ========================================================================
 
 0. DOWNLOAD & INSTALL THE PACKAGE
@@ -8,90 +8,74 @@ AUTHENTICATOR — CORE COMMANDS REFERENCE
 1. SETUP & INSTALLATION (ON-DEMAND & MODULAR — TRANSLATOR STYLE)
 ------------------------------------------------------------------------
 
-   A. INTERACTIVE INSTALLER (Prompts you to choose modules and UI framework):
+   A. INTERACTIVE INSTALLER:
       php artisan authenticator:install
 
-   B. FULL SUITE INSTALLATION WITH TAILWIND (Default):
-      php artisan authenticator:install --all --framework=tailwind
+   B. FULL SUITE INSTALLATION (All modules: Core, Profile, OTP, 2FA, PIN, Social):
+      php artisan authenticator:install --all
 
-   C. FULL SUITE INSTALLATION WITH BOOTSTRAP 5:
-      php artisan authenticator:install --all --framework=bootstrap
+   C. CORE AUTH ONLY (Sign-in, Sign-up, Account Gateway, Password Reset):
+      php artisan authenticator:install --core
 
-   D. FULL SUITE INSTALLATION WITH BOTH FRAMEWORKS:
-      php artisan authenticator:install --all --framework=all
+   D. USER PORTAL ONLY (Dashboard, Profile Management, 5 Isolated Credential Forms):
+      php artisan authenticator:install --profile
 
-   E. MINIMAL CORE INSTALLATION:
-      php artisan authenticator:install --type=core --framework=tailwind
-      • Installs: users, user_data
-      • Best for: Projects using standard email/phone/username login + Modern UI.
-
-   F. OTP VERIFICATION MODULE ONLY:
-      php artisan authenticator:install --type=otp
-      • Installs: user_otps
-      • Best for: Email/SMS verification, passwordless login, OTP reset.
-
-   G. TWO-FACTOR AUTHENTICATION (2FA) ONLY:
-      php artisan authenticator:install --type=2fa
-      • Installs: user_2fa
-      • Best for: Google Authenticator TOTP & recovery codes on login.
-
-   H. PIN CONTENT LOCK ONLY:
-      php artisan authenticator:install --type=pin
-      • Installs: user_pins
-      • Best for: Privacy screen lock overlay while authenticated.
-
-   I. SOCIAL ACCOUNTS MODULE ONLY:
-      php artisan authenticator:install --type=social
-      • Installs: social_providers, user_socials
-      • Best for: Google, Facebook, GitHub OAuth login + dynamic admin settings.
-
-   J. COMBINED CUSTOM SELECTION (Multi-module):
-      php artisan authenticator:install --type=core,otp,pin --framework=bootstrap
-      php artisan authenticator:install --type=core,social,2fa --framework=tailwind
+   E. MULTI-MODULE INSTALLATION:
+      php artisan authenticator:install --type=core,profile,otp
 
 ------------------------------------------------------------------------
-2. ARTISAN PUBLISH TAGS (MANUAL PUBLISHING)
+2. GRANULAR MODULE PUBLISH TAGS (VENDOR:PUBLISH)
 ------------------------------------------------------------------------
 
-   A. CONFIG ONLY:
+   A. CONFIG & ASSETS:
       php artisan vendor:publish --tag=authenticator-config
-
-   B. VIEWS (Published directly to resources/views/auth/ - No vendor folder):
-      php artisan vendor:publish --tag=authenticator-views           # Active framework templates
-      php artisan vendor:publish --tag=authenticator-views-tailwind  # Tailwind CSS templates
-      php artisan vendor:publish --tag=authenticator-views-bootstrap # Bootstrap 5 templates
-
-   C. ASSETS ONLY (JS API Bridge & CSS):
       php artisan vendor:publish --tag=authenticator-assets
+      php artisan vendor:publish --tag=authenticator-service
 
-   D. MIGRATIONS BY MODULE:
-      php artisan vendor:publish --tag=migrations-core
-      php artisan vendor:publish --tag=migrations-otp
+   B. MODULE 1: CORE AUTH:
+      php artisan vendor:publish --tag=authenticator-core               # Full Core bundle
+      php artisan vendor:publish --tag=authenticator-core-controllers   # Controllers -> app/Http/Controllers/Authenticator
+      php artisan vendor:publish --tag=authenticator-core-views         # Views -> resources/views/authenticator
+      php artisan vendor:publish --tag=authenticator-core-routes        # Routes -> routes/authenticator/core.php
+      php artisan vendor:publish --tag=migrations-core                  # Migrations -> database/migrations
+
+   C. MODULE 2: PROFILE & PORTAL:
+      php artisan vendor:publish --tag=authenticator-profile            # Full Profile bundle
+      php artisan vendor:publish --tag=authenticator-profile-controllers# AuthenticatorController -> app/Http/Controllers/Authenticator
+      php artisan vendor:publish --tag=authenticator-profile-views      # Views -> resources/views/authenticator/profile
+      php artisan vendor:publish --tag=authenticator-profile-routes     # Routes -> routes/authenticator/profile.php
+
+   D. MODULE 3: OTP VERIFICATION:
+      php artisan vendor:publish --tag=authenticator-otp                # Full OTP bundle
+      php artisan vendor:publish --tag=authenticator-otp-controllers    # Controller
+      php artisan vendor:publish --tag=authenticator-otp-views          # Views -> verify.blade.php & otp/
+      php artisan vendor:publish --tag=authenticator-otp-routes         # Routes -> routes/authenticator/otp.php
+      php artisan vendor:publish --tag=migrations-otp                   # Migrations
+
+   E. MODULE 4: TWO-FACTOR (2FA):
+      php artisan vendor:publish --tag=authenticator-2fa                # Full 2FA bundle
+      php artisan vendor:publish --tag=authenticator-2fa-controllers
+      php artisan vendor:publish --tag=authenticator-2fa-views
+      php artisan vendor:publish --tag=authenticator-2fa-routes
       php artisan vendor:publish --tag=migrations-2fa
+
+   F. MODULE 5: PIN CONTENT LOCK:
+      php artisan vendor:publish --tag=authenticator-pin                # Full PIN bundle
+      php artisan vendor:publish --tag=authenticator-pin-controllers
+      php artisan vendor:publish --tag=authenticator-pin-views
+      php artisan vendor:publish --tag=authenticator-pin-routes
       php artisan vendor:publish --tag=migrations-pin
+
+   G. MODULE 6: SOCIALITE:
+      php artisan vendor:publish --tag=authenticator-social             # Full Social bundle
+      php artisan vendor:publish --tag=authenticator-social-controllers
+      php artisan vendor:publish --tag=authenticator-social-views
+      php artisan vendor:publish --tag=authenticator-social-routes
       php artisan vendor:publish --tag=migrations-social
-      php artisan vendor:publish --tag=authenticator-migrations  # All 7 tables
 
-------------------------------------------------------------------------
-3. UI EMBEDDING (PAGE & MODAL SUPPORT — ZERO CONFLICT ARCHITECTURE)
-------------------------------------------------------------------------
-   • Standalone Sign-In:     http://your-domain.test/sign-in
-   • Standalone Sign-Up:     http://your-domain.test/sign-up
-   • Unified Account Portal: http://your-domain.test/account
-   • Auth Modal Preview:     http://your-domain.test/modal
-
-   • Embedding Pure Forms in ANY Blade View:
-     @include('auth.forms.sign-in-form')
-     @include('auth.forms.sign-up-form')
-     @include('auth.forms.account-form')
-
-   • Embedding Auth Modal in your Layout:
-     @include('auth.auth-modal')
-
-     <!-- Trigger anywhere via JavaScript: -->
-     <button onclick="window.openAuthModal('sign-in')">Sign In</button>
-     <button onclick="window.openAuthModal('sign-up')">Sign Up</button>
-
-   • API Endpoints:          http://your-domain.test/api/v1/auth/*
-
-
+   H. MASTER AGGREGATE TAGS:
+      php artisan vendor:publish --tag=authenticator-controllers        # All controllers
+      php artisan vendor:publish --tag=authenticator-views              # All views
+      php artisan vendor:publish --tag=authenticator-routes             # All routes
+      php artisan vendor:publish --tag=authenticator-migrations         # All migrations
+      php artisan vendor:publish --tag=authenticator-all                # EVERYTHING!
