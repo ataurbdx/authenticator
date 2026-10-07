@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Authenticator;
+namespace Ataurbdx\Authenticator\Http\Controllers\Web\Authenticator;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Ataurbdx\Authenticator\Modules\Socialite\Models\SocialProvider;
 use Ataurbdx\Authenticator\Modules\Socialite\Models\UserSocial;
 use Illuminate\Http\Request;

@@ -14,7 +14,7 @@
         @foreach ($providers as $provider)
             @php
                 $providerSlug = strtolower($provider->provider);
-                $redirectUrl = route('authenticator.api.social.redirect', $providerSlug);
+                $redirectUrl = route('authenticator.social.redirect', $providerSlug);
                 
                 // Styling details
                 $iconClass = $provider->icon ?: match($providerSlug) {
@@ -27,7 +27,8 @@
             @endphp
 
             <a href="{{ $redirectUrl }}"
-               class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99]">
+               onclick="openSocialPopup('{{ $providerSlug }}', event)"
+               class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
                 <i class="{{ $iconClass }} text-base group-hover:scale-110 transition-transform"></i>
                 <span class="text-slate-200 group-hover:text-white">Continue with {{ $provider->name }}</span>
             </a>
@@ -36,15 +37,23 @@
 @else
     <!-- Fallback default buttons if database table is empty -->
     <div class="space-y-3">
-        <a href="{{ url('api/v1/auth/social/google') }}"
-           class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99]">
+        <a href="{{ route('authenticator.social.redirect', 'google') }}"
+           onclick="openSocialPopup('google', event)"
+           class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
             <i class="fa-brands fa-google text-rose-500 text-base group-hover:scale-110 transition-transform"></i>
             <span class="text-slate-200 group-hover:text-white">Continue with Google</span>
         </a>
-        <a href="{{ url('api/v1/auth/social/facebook') }}"
-           class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99]">
+        <a href="{{ route('authenticator.social.redirect', 'facebook') }}"
+           onclick="openSocialPopup('facebook', event)"
+           class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
             <i class="fa-brands fa-facebook text-blue-500 text-base group-hover:scale-110 transition-transform"></i>
             <span class="text-slate-200 group-hover:text-white">Continue with Facebook</span>
+        </a>
+        <a href="{{ route('authenticator.social.redirect', 'github') }}"
+           onclick="openSocialPopup('github', event)"
+           class="group w-full py-3 px-4 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl text-white text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 no-underline shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
+            <i class="fa-brands fa-github text-slate-100 text-base group-hover:scale-110 transition-transform"></i>
+            <span class="text-slate-200 group-hover:text-white">Continue with GitHub</span>
         </a>
     </div>
 @endif

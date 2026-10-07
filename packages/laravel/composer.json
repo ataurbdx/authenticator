@@ -1,6 +1,6 @@
 {
     "name": "ataurbdx/authenticator",
-    "version": "1.0.0-dev",
+    "version": "1.0.5",
     "description": "Universal Modular Authentication & Security Engine for Laravel.",
     "keywords": [
         "laravel",

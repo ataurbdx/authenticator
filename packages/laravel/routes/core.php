@@ -52,8 +52,4 @@ Route::middleware('guest')->group(function () use ($signinCtrl, $signupCtrl, $ac
 
     // 4. Smart Identifier Check (AJAX / API)
     Route::post('/check-identifier', [$accountCtrl, 'checkIdentifier'])->name('check-identifier');
-
-    // 5. Backward Compatibility Aliases & Redirects
-    Route::get('/login', fn() => redirect()->route('authenticator.sign-in'))->name('login');
-    Route::get('/register', fn() => redirect()->route('authenticator.sign-up'))->name('register');
 });

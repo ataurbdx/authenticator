@@ -105,6 +105,9 @@
         &copy; {{ date('Y') }} Authenticator. All rights reserved.
     </footer>
 
+    <!-- Core Authenticator JS -->
+    <script src="{{ asset('vendor/authenticator/js/authenticator.js') }}"></script>
+
     @stack('scripts')
 </body>
 </html>

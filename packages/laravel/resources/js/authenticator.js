@@ -1,44 +1,30 @@
-/**
- * Authenticator Master JavaScript API Bridge
- * Supports both standard page workflows & AJAX modals.
- */
 document.addEventListener('DOMContentLoaded', function () {
-    'use strict';
-
     // ----------------------------------------------------
-    // Helper: CSRF Token
-    // ----------------------------------------------------
-    function getCsrfToken() {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            || document.querySelector('input[name="_token"]')?.value
-            || '';
-    }
-
-    // ----------------------------------------------------
-    // Event Delegation: Click Listeners
+    // Event Delegation: Handles dynamic elements (modals & ajax loads)
     // ----------------------------------------------------
     document.addEventListener('click', function (e) {
-        // 1. Password Visibility Toggle
-        const toggleBtn = e.target.closest('.auth-password-toggle') || e.target.closest('.js-password-toggle-btn');
+        // Handle Password Visibility Toggle
+        const toggleBtn = e.target.closest('.auth-password-toggle');
         if (toggleBtn) {
             e.preventDefault();
-            const container = toggleBtn.closest('.auth-password-group') || toggleBtn.closest('.relative') || toggleBtn.parentElement;
+            const container = toggleBtn.closest('.auth-password-group');
             if (container) {
                 const input = container.querySelector('input');
                 const icon = toggleBtn.querySelector('i');
 
-                if (input) {
-                    const isPassword = input.type === 'password';
-                    input.type = isPassword ? 'text' : 'password';
-                    if (icon) {
-                        icon.classList.toggle('fa-eye', !isPassword);
-                        icon.classList.toggle('fa-eye-slash', isPassword);
-                    }
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
                 }
             }
         }
 
-        // 2. Sign-in / Gateway Method Switcher (Email / Phone / Username)
+        // Handle Sign-in Method Selection (Email/Phone/Username)
         const methodBtn = e.target.closest('.auth-method-btn');
         if (methodBtn) {
             e.preventDefault();
@@ -53,63 +39,51 @@ document.addEventListener('DOMContentLoaded', function () {
                 const ccWrap = wrapper.querySelector('.auth-country-code-wrap');
                 const typeInput = wrapper.querySelector('.auth-type-input');
 
-                const oldType = selectionWrap?.dataset?.currentType;
-                if (oldType && input) {
+                const oldType = selectionWrap.dataset.currentType;
+                if (oldType) {
                     input.dataset[oldType + 'Value'] = input.value;
                 }
 
-                if (selectionWrap) {
-                    selectionWrap.classList.add('hidden');
-                    selectionWrap.dataset.currentType = type;
-                }
+                selectionWrap.classList.add('hidden');
+                selectionWrap.dataset.currentType = type;
                 if (typeInput) typeInput.value = type;
-
-                if (input) {
-                    input.value = input.dataset[type + 'Value'] || '';
-                }
-
-                if (formContainer) {
-                    formContainer.classList.remove('hidden');
-                }
+                
+                input.value = input.dataset[type + 'Value'] || '';
+                
+                formContainer.classList.remove('hidden');
 
                 if (type === 'email') {
-                    if (title) title.innerText = 'Email Address';
-                    if (input) {
-                        input.type = 'email';
-                        input.placeholder = 'name@example.com';
-                    }
-                    if (icon) icon.className = 'auth-input-icon fa-regular fa-envelope';
+                    title.innerText = 'Email Address';
+                    input.type = 'email';
+                    input.placeholder = 'name@example.com';
+                    icon.className = 'fa-regular fa-envelope';
                     if (ccWrap) ccWrap.classList.add('hidden');
                 } else if (type === 'phone') {
-                    if (title) title.innerText = 'Phone Number';
-                    if (input) {
-                        input.type = 'tel';
-                        input.placeholder = '1700000000';
-                    }
-                    if (icon) icon.className = 'auth-input-icon fa-solid fa-phone';
+                    title.innerText = 'Phone Number';
+                    input.type = 'tel';
+                    input.placeholder = '1700000000';
+                    icon.className = 'fa-solid fa-phone';
                     if (ccWrap) ccWrap.classList.remove('hidden');
                 } else {
-                    if (title) title.innerText = 'Username';
-                    if (input) {
-                        input.type = 'text';
-                        input.placeholder = 'Enter your username';
-                    }
-                    if (icon) icon.className = 'auth-input-icon fa-regular fa-user';
+                    title.innerText = 'Username';
+                    input.type = 'text';
+                    input.placeholder = 'Enter your username';
+                    icon.className = 'fa-regular fa-user';
                     if (ccWrap) ccWrap.classList.add('hidden');
                 }
 
-                if (input) input.focus();
+                input.focus();
             }
         }
 
-        // 3. Change Method (Back) Button
+        // Handle Change Method (Back)
         const backBtn = e.target.closest('.auth-change-method-btn');
         if (backBtn) {
             e.preventDefault();
             const wrapper = backBtn.closest('.auth-form-wrapper');
             if (wrapper) {
-                wrapper.querySelector('.auth-form-container')?.classList.add('hidden');
-                wrapper.querySelector('.auth-methods-selection')?.classList.remove('hidden');
+                wrapper.querySelector('.auth-form-container').classList.add('hidden');
+                wrapper.querySelector('.auth-methods-selection').classList.remove('hidden');
                 hideFeedback(wrapper);
             }
         }
@@ -147,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ----------------------------------------------------
-    // Gateway Identifier Check Submit (AJAX)
+    // Gateway Form Submit
     // ----------------------------------------------------
     document.addEventListener('submit', async function (e) {
         if (e.target.matches('.auth-gateway-form')) {
@@ -156,11 +130,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const wrapper = form.closest('.auth-form-wrapper');
 
             const input = form.querySelector('.auth-identifier-input');
-            const val = input ? input.value.trim() : '';
+            const val = input.value.trim();
             if (!val) return;
 
-            const selection = wrapper?.querySelector('.auth-methods-selection');
-            const typeField = selection?.dataset?.currentType || 'email';
+            const typeField = form.closest('.auth-form-wrapper').querySelector('.auth-methods-selection').dataset.currentType || 'email';
 
             let payload = { identifier: val };
 
@@ -171,22 +144,25 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const btn = form.querySelector('button[type="submit"]');
-            const btnText = btn?.querySelector('.btn-text');
-            const btnIcon = btn?.querySelector('.btn-icon');
+            const btnText = btn.querySelector('.btn-text');
+            const btnIcon = btn.querySelector('.btn-icon');
 
             // Loading state
-            if (btn) btn.disabled = true;
+            btn.disabled = true;
             if (btnText) btnText.innerText = 'Checking Account...';
             if (btnIcon) btnIcon.className = 'btn-icon fa-solid fa-circle-notch fa-spin text-xs';
-            if (wrapper) hideFeedback(wrapper);
+            hideFeedback(wrapper);
 
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    || document.querySelector('input[name="_token"]')?.value;
+
                 const res = await fetch(form.dataset.actionUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken()
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify(payload)
                 });
@@ -194,27 +170,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 const data = await res.json();
 
                 if (data.exists) {
-                    if (wrapper) showFeedback(wrapper, data.message || 'Account found! Redirecting...', true);
+                    showFeedback(wrapper, data.message || 'Account found! Redirecting...', true);
                     setTimeout(() => {
                         window.location.href = data.data.redirect_url;
-                    }, 1500);
+                    }, 2000);
                 } else {
-                    if (wrapper) showFeedback(wrapper, data.message || 'No account found. Let\'s create one!', false);
+                    showFeedback(wrapper, data.message || 'No account found. Create one...', false);
                     setTimeout(() => {
                         window.location.href = data.data.redirect_url;
-                    }, 1500);
+                    }, 2000);
                 }
             } catch (err) {
                 console.error('Identifier check error:', err);
-                if (btn) btn.disabled = false;
-                if (btnText) btnText.innerText = 'Find Account & Continue';
-                if (btnIcon) btnIcon.className = 'btn-icon fa-solid fa-arrow-right text-xs';
+                window.location.href = form.dataset.signinUrl;
             }
         }
     });
 
     // ----------------------------------------------------
-    // Standard Form Submit Loader (Sign In, Sign Up, etc.)
+    // Standard Form Submit Loader (for Sign In, Sign Up, etc)
     // ----------------------------------------------------
     document.addEventListener('submit', function (e) {
         if (e.target.matches('.auth-standard-form')) {
@@ -231,23 +205,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ----------------------------------------------------
-    // Handle OTP Input Auto-Focus & Paste
+    // Handle OTP Input Auto-Focus
     // ----------------------------------------------------
     function initOtpInputs(container) {
         if (!container) return;
 
-        const inputs = container.querySelectorAll('.otp-input, .js-otp-digit');
-        const hiddenInput = container.querySelector('.otp-hidden-input, .js-otp-full-code');
-        if (!inputs.length) return;
+        const inputs = container.querySelectorAll('.otp-input');
+        const hiddenInput = container.querySelector('.otp-hidden-input');
+        if (!inputs.length || !hiddenInput) return;
 
         const updateHiddenInput = () => {
-            if (!hiddenInput) return;
             let code = '';
             inputs.forEach(input => code += input.value);
             hiddenInput.value = code;
         };
 
         inputs.forEach((input, index) => {
+            // Prevent binding multiple times if re-initialized
             if (input.dataset.otpInitialized) return;
             input.dataset.otpInitialized = 'true';
 
@@ -281,18 +255,64 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
+        // Focus first input on load
         if (inputs.length > 0) {
             inputs[0].focus();
         }
     }
 
-    const otpContainer = document.querySelector('.auth-otp-container, .js-otp-inputs-wrap');
+    // Initialize OTP if present on page load
+    const otpContainer = document.querySelector('.auth-otp-container');
     if (otpContainer) {
         initOtpInputs(otpContainer);
     }
 
-    // Expose Authenticator API on window
+    // Expose init function globally in case forms are loaded via AJAX later
     window.Authenticator = {
         initOtp: initOtpInputs
     };
+});
+
+// ----------------------------------------------------
+// Social Authentication: Popup & PostMessage Handler (Asset Sheba Pattern)
+// ----------------------------------------------------
+window.openSocialPopup = function (provider, event, customUrl = null) {
+    if (event) event.preventDefault();
+
+    const width = 500;
+    const height = 620;
+    const screenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+    const screenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+    const outerWidth = window.outerWidth || document.documentElement.clientWidth || screen.width;
+    const outerHeight = window.outerHeight || document.documentElement.clientHeight || screen.height;
+
+    const left = screenLeft + Math.max(0, (outerWidth - width) / 2);
+    const top = screenTop + Math.max(0, (outerHeight - height) / 2);
+
+    const url = customUrl || `/social/${provider}`;
+
+    const popup = window.open(
+        url,
+        'socialAuthPopup',
+        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,status=no,toolbar=no,menubar=no`
+    );
+
+    if (popup) {
+        popup.focus();
+    }
+};
+
+window.addEventListener('message', function (event) {
+    if (!event.data || typeof event.data !== 'object') return;
+
+    if (event.data.type === 'socialLoginSuccess') {
+        const redirectUrl = event.data.redirectUrl;
+        if (redirectUrl && redirectUrl !== window.location.href && redirectUrl !== window.location.pathname) {
+            window.location.href = redirectUrl;
+        } else {
+            window.location.reload();
+        }
+    } else if (event.data.type === 'socialLoginError') {
+        alert(event.data.message || 'Social authentication failed.');
+    }
 });

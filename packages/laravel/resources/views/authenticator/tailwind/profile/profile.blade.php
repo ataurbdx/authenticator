@@ -53,7 +53,7 @@
                 <i class="fa-solid fa-circle-exclamation text-sm text-rose-400"></i>
                 <span>Action could not be completed:</span>
             </div>
-            <ul class="list-disc list-inside text-xs text-rose-400 pl-4 space-y-0.5">
+            <ul class="list-disc list-inside text-[11px] text-rose-400 pl-4 space-y-0.5">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -61,7 +61,7 @@
         </div>
     @endif
 
-    <!-- VERIFICATION SECTION -->
+    <!-- VERIFICATION SECTION (SEPARATE EMAIL & PHONE STATUS) -->
     <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-4">
             <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -78,7 +78,7 @@
                     </div>
                     <div class="min-w-0">
                         <h4 class="text-xs font-bold text-white truncate">Email Address</h4>
-                        <p class="text-xs text-slate-400 mt-0.5 truncate">
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             {{ $user->email ?? 'No email added' }}
                         </p>
                         <span class="inline-block text-[10px] font-extrabold {{ $isEmailVerified ? 'text-emerald-400' : 'text-amber-400' }} mt-0.5">
@@ -103,7 +103,7 @@
                     </div>
                     <div class="min-w-0">
                         <h4 class="text-xs font-bold text-white truncate">Phone Number</h4>
-                        <p class="text-xs text-slate-400 mt-0.5 truncate">
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             {{ $user->phone ?? 'No phone added' }}
                         </p>
                         <span class="inline-block text-[10px] font-extrabold {{ $isPhoneVerified ? 'text-emerald-400' : 'text-amber-400' }} mt-0.5">
@@ -122,13 +122,13 @@
         </div>
     </div>
 
-    <!-- PERSONAL INFORMATION CARD -->
+    <!-- PERSONAL INFORMATION CARD (EXACT MATCHING DESIGN) -->
     <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
             <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <i class="fa-regular fa-id-card text-emerald-400 text-sm"></i> Personal Information
             </h3>
-            <span class="text-xs text-slate-400">Member since {{ optional($user->created_at)->format('M d, Y') ?? 'Recent' }}</span>
+            <span class="text-[11px] text-slate-400">Member since {{ optional($user->created_at)->format('M d, Y') ?? 'Recent' }}</span>
         </div>
 
         <div class="flex flex-col md:flex-row items-start gap-6">
@@ -159,7 +159,7 @@
                     <p class="text-xs font-bold text-white">{{ $displayName }}</p>
                 </div>
 
-                <!-- Username -->
+                <!-- Username (Separate Form Trigger) -->
                 <div class="p-3.5 bg-slate-950/60 rounded-2xl border border-slate-800/80">
                     <div class="flex items-center justify-between mb-1 min-h-[20px]">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username</span>
@@ -172,7 +172,7 @@
                     <p class="text-xs font-bold text-white">&#64;{{ $user->username ?: '—' }}</p>
                 </div>
 
-                <!-- Email Address -->
+                <!-- Email Address (Separate Form Trigger) -->
                 <div class="p-3.5 bg-slate-950/60 rounded-2xl border border-slate-800/80">
                     <div class="flex items-center justify-between mb-1 min-h-[20px] gap-2">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</span>
@@ -200,7 +200,7 @@
                     </div>
                 </div>
 
-                <!-- Phone Number -->
+                <!-- Phone Number (Separate Form Trigger) -->
                 <div class="p-3.5 bg-slate-950/60 rounded-2xl border border-slate-800/80">
                     <div class="flex items-center justify-between mb-1 min-h-[20px] gap-2">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phone Number</span>
@@ -254,7 +254,7 @@
             </div>
             <div>
                 <h4 class="text-xs font-bold text-white">Account Password & Security</h4>
-                <p class="text-xs text-slate-400 mt-0.5">Ensure your account is using a strong password for optimal security</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Ensure your account is using a strong password for optimal security</p>
             </div>
         </div>
 
@@ -263,6 +263,88 @@
             <i class="fa-solid fa-key text-xs"></i>
             <span>{{ $user->password ? 'Change Password' : 'Set Password' }}</span>
         </button>
+    </div>
+
+    <!-- CONNECTED SOCIAL ACCOUNTS (ASSET-SHEBA PATTERN) -->
+    <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider">Connected Social Accounts</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Link your social accounts for fast 1-click login and seamless access</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+            @php
+                $activeProviders = collect();
+                try {
+                    if (class_exists(\Ataurbdx\Authenticator\Modules\Socialite\Models\SocialProvider::class)) {
+                        $activeProviders = \Ataurbdx\Authenticator\Modules\Socialite\Models\SocialProvider::where('is_active', true)->get();
+                    }
+                } catch (\Throwable $e) {
+                    $activeProviders = collect();
+                }
+            @endphp
+
+            @forelse($activeProviders as $provider)
+                @php
+                    $slug = strtolower($provider->provider);
+                    $isLinked = $user->hasSocial($slug);
+                    $linkData = $isLinked ? $user->getSocial($slug) : null;
+                    $iconClass = $provider->icon ?: match($slug) {
+                        'google' => 'fa-brands fa-google text-rose-500',
+                        'facebook' => 'fa-brands fa-facebook text-blue-500',
+                        'github' => 'fa-brands fa-github text-slate-200',
+                        'apple' => 'fa-brands fa-apple text-white',
+                        default => 'fa-solid fa-globe text-emerald-400',
+                    };
+                @endphp
+                <div class="p-3.5 bg-slate-950/60 rounded-2xl border {{ $isLinked ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-slate-800/80' }} flex flex-col justify-between gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-sm shrink-0">
+                                <i class="{{ $iconClass }}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-xs font-bold text-white block truncate">{{ $provider->name }}</span>
+                                <span class="text-[10px] text-slate-400 truncate block">
+                                    {{ $isLinked ? ($linkData->email ?? 'Connected') : 'Not linked' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        @if($isLinked)
+                            <span class="inline-flex items-center text-emerald-400 text-xs shrink-0" title="Connected">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="pt-1 border-t border-slate-800/60 flex items-center justify-end">
+                        @if($isLinked)
+                            <button type="button" onclick="disconnectSocialAccount('{{ $slug }}')"
+                                class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1">
+                                <i class="fa-solid fa-link-slash text-[10px]"></i> Disconnect
+                            </button>
+                        @else
+                            <button type="button" onclick="openSocialPopup('{{ $slug }}', event, '{{ route('authenticator.social.connect', $slug) }}')"
+                                class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Connect
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="col-span-full py-4 text-center text-xs text-slate-500">
+                    No active social providers configured.
+                </div>
+            @endforelse
+        </div>
     </div>
 
 </div>
@@ -438,6 +520,38 @@
                 form.submit();
             }
         }
+    }
+
+    function disconnectSocialAccount(provider) {
+        if (!confirm('Are you sure you want to disconnect your ' + provider.toUpperCase() + ' account?')) {
+            return;
+        }
+
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+        const url = '{{ route("authenticator.social.disconnect", ["provider" => "__PROVIDER__"]) }}'.replace('__PROVIDER__', provider);
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message || 'Could not disconnect account.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred while disconnecting the account.');
+        });
     }
 </script>
 @endpush

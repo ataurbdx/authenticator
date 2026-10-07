@@ -26,7 +26,7 @@ class AuthenticatorServiceProvider extends ServiceProvider
             return $app['authenticator.auth'];
         });
         $this->app->singleton(\Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService::class, function ($app) {
-            return $app['authenticator.auth'];
+            return new \Ataurbdx\Authenticator\Modules\Authenticator\Services\AuthenticatorService();
         });
 
         $this->app->singleton('authenticator.otp', function ($app) {
@@ -64,9 +64,19 @@ class AuthenticatorServiceProvider extends ServiceProvider
         }
         $this->loadViewsFrom(__DIR__ . '/../resources/views/authenticator', 'authenticator');
 
+        // Register package views as fallback locations so view('authenticator.sign-in') works immediately even if un-published
+        if ($this->app->bound('view')) {
+            if (is_dir($frameworkViewPath)) {
+                $this->app['view']->addLocation($frameworkViewPath);
+            }
+            $this->app['view']->addLocation(__DIR__ . '/../resources/views');
+        }
+
         // 2. Load Routes
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        if (!file_exists(base_path('routes/authenticator/routes.php')) && !file_exists(base_path('routes/authenticator/core.php'))) {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        }
 
         // 3. Register Middleware Aliases
         $router = $this->app['router'];
@@ -117,13 +127,17 @@ class AuthenticatorServiceProvider extends ServiceProvider
             // Core Views
             $coreViews = [
                 __DIR__ . '/../resources/views/authenticator/tailwind/layout.blade.php' => resource_path('views/authenticator/layout.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/auth-modal.blade.php' => resource_path('views/authenticator/auth-modal.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/account.blade.php' => resource_path('views/authenticator/account.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/sign-in.blade.php' => resource_path('views/authenticator/sign-in.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/sign-up.blade.php' => resource_path('views/authenticator/sign-up.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/nav-tabs.blade.php' => resource_path('views/authenticator/nav-tabs.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/social-btn.blade.php' => resource_path('views/authenticator/social-btn.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/social-callback.blade.php' => resource_path('views/authenticator/social-callback.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/forgot-password.blade.php' => resource_path('views/authenticator/forgot-password.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/reset-password.blade.php' => resource_path('views/authenticator/reset-password.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/forms' => resource_path('views/authenticator/forms'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/partials' => resource_path('views/authenticator/partials'),
             ];
             $this->publishes($coreViews, 'authenticator-core-views');
 
@@ -286,6 +300,8 @@ class AuthenticatorServiceProvider extends ServiceProvider
             $this->publishes($socialControllers, 'authenticator-social-controllers');
 
             $socialViews = [
+                __DIR__ . '/../resources/views/authenticator/tailwind/social-btn.blade.php' => resource_path('views/authenticator/social-btn.blade.php'),
+                __DIR__ . '/../resources/views/authenticator/tailwind/social-callback.blade.php' => resource_path('views/authenticator/social-callback.blade.php'),
                 __DIR__ . '/../resources/views/authenticator/tailwind/socialite' => resource_path('views/authenticator/socialite'),
             ];
             $this->publishes($socialViews, 'authenticator-social-views');
@@ -308,7 +324,17 @@ class AuthenticatorServiceProvider extends ServiceProvider
             $allControllers = array_merge($coreControllers, $profileControllers, $otpControllers, $twoFactorControllers, $pinControllers, $socialControllers);
             $this->publishes($allControllers, 'authenticator-controllers');
 
-            $allViews = array_merge($coreViews, $profileViews, $otpViews, $twoFactorViews, $pinViews, $socialViews);
+            $allViews = array_merge(
+                [
+                    __DIR__ . '/../resources/views/authenticator/tailwind' => resource_path('views/authenticator'),
+                ],
+                $coreViews,
+                $profileViews,
+                $otpViews,
+                $twoFactorViews,
+                $pinViews,
+                $socialViews
+            );
             $this->publishes($allViews, 'authenticator-views');
 
             $allRoutes = array_merge($coreRoutes, $profileRoutes, $otpRoutes, $twoFactorRoutes, $pinRoutes, $socialRoutes);
