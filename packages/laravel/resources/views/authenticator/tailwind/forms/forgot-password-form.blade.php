@@ -1,24 +1,32 @@
-<!-- Forgot Password Form Component (Tailwind) -->
-<form class="js-auth-form js-forgot-password-form space-y-4" 
-      data-api-endpoint="{{ url(config('authenticator.routes.api_prefix', 'api/v1/auth') . '/otp/send') }}" 
-      method="POST" action="javascript:void(0);" novalidate>
+<form method="POST" action="{{ route('authenticator.forgot-password.submit') ?? '#' }}" class="space-y-5 auth-standard-form">
     @csrf
-    <input type="hidden" name="action" value="reset_password">
 
-    <div class="form-field-wrap">
-        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <i class="fa-regular fa-envelope text-theme-primary text-xs"></i> Email Address or Phone Number
+    <div>
+        <label for="identifier" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Email or Phone Number (With Code)
         </label>
-        <input type="text" name="contact" placeholder="Enter your registered email or phone" autocomplete="username" required
-            class="js-input-contact w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 dark:text-slate-100 outline-none focus:border-theme-primary focus:bg-white dark:focus:bg-slate-800 transition-all font-medium">
-        <div class="error-message hidden mt-1"><span class="error-text text-red-500 text-[11px] font-medium"></span></div>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <i class="fa-regular fa-envelope text-sm"></i>
+            </div>
+            <input 
+                type="text" 
+                id="identifier" 
+                name="identifier" 
+                value="{{ old('identifier') }}" 
+                required 
+                autofocus
+                placeholder="Enter your email or phone" 
+                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-10 pr-3.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium"
+            >
+        </div>
     </div>
 
-    <div class="pt-1">
-        <button type="submit" 
-            class="js-submit-btn w-full py-2.5 px-4 bg-theme-primary hover:bg-theme-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-none cursor-pointer">
-            <span>Send Recovery Code</span>
-            <i class="fa-solid fa-arrow-right text-xs"></i>
-        </button>
-    </div>
+    <button 
+        type="submit" 
+        class="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-emerald-700/20 hover:shadow-emerald-700/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+    >
+        <span class="btn-text">Reset Password</span>
+        <i class="btn-icon fa-solid fa-arrow-right-long text-xs"></i>
+    </button>
 </form>

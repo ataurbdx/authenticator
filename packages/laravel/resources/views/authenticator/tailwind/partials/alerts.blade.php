@@ -24,3 +24,17 @@
         <span>{{ session('status') }}</span>
     </div>
 @endif
+
+@if(isset($errors) && $errors->any())
+    <div class="p-3 rounded-xl text-xs font-medium mb-3 bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+        <div class="flex items-center gap-2 mb-1.5 font-bold">
+            <i class="fa-solid fa-triangle-exclamation text-sm shrink-0"></i>
+            <span>{{ __('Please correct the following errors:') }}</span>
+        </div>
+        <ul class="list-disc list-inside space-y-0.5 text-[11px] opacity-90 pl-1">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif

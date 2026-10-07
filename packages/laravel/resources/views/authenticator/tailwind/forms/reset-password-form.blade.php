@@ -1,47 +1,62 @@
-<!-- Reset Password Form Component (Tailwind) -->
-<form class="js-auth-form js-reset-password-form space-y-3.5" 
-      data-api-endpoint="{{ url(config('authenticator.routes.api_prefix', 'api/v1/auth') . '/reset-password') }}" 
-      method="POST" action="javascript:void(0);" novalidate>
+<form method="POST" action="{{ route('authenticator.reset-password.submit') ?? '#' }}" class="space-y-4 auth-standard-form">
     @csrf
-    <input type="hidden" name="identifier" class="js-reset-identifier" value="{{ request('identifier', '') }}">
 
-    <!-- 6-digit Code -->
-    <div class="form-field-wrap">
-        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <i class="fa-solid fa-key text-theme-primary text-xs"></i> 6-Digit Verification Code
-        </label>
-        <input type="text" name="code" placeholder="123456" maxlength="6" inputmode="numeric" required
-            class="js-input-code w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-center text-base tracking-widest font-black text-slate-800 dark:text-slate-100 outline-none focus:border-theme-primary focus:bg-white dark:focus:bg-slate-800 transition-all">
-        <div class="error-message hidden mt-1"><span class="error-text text-red-500 text-[11px] font-medium"></span></div>
-    </div>
+    <input type="hidden" name="token" value="{{ $token ?? '' }}">
+    <input type="hidden" name="identifier" value="{{ request('identifier') ?? old('identifier') }}">
 
-    <!-- New Password -->
-    <div class="form-field-wrap">
-        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <i class="fa-solid fa-lock text-theme-primary text-xs"></i> New Password
+    <div>
+        <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            New Password
         </label>
-        <div class="relative">
-            <input type="password" name="password" placeholder="••••••••" autocomplete="new-password" required
-                class="js-input-password w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-slate-800 dark:text-slate-100 outline-none focus:border-theme-primary focus:bg-white dark:focus:bg-slate-800 transition-all font-medium">
-            <button type="button" class="js-password-toggle-btn absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer">
+        <div class="relative auth-password-group">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <i class="fa-solid fa-lock text-sm"></i>
+            </div>
+            <input 
+                type="password" 
+                name="password" 
+                required 
+                placeholder="••••••••" 
+                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium"
+            >
+            <button 
+                type="button" 
+                class="auth-password-toggle absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors bg-transparent border-none cursor-pointer"
+            >
                 <i class="fa-regular fa-eye text-xs"></i>
             </button>
         </div>
-        <div class="error-message hidden mt-1"><span class="error-text text-red-500 text-[11px] font-medium"></span></div>
     </div>
 
-    <!-- Confirm Password -->
-    <div class="form-field-wrap">
-        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Confirm New Password</label>
-        <input type="password" name="password_confirmation" placeholder="••••••••" autocomplete="new-password" required
-            class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 dark:text-slate-100 outline-none focus:border-theme-primary focus:bg-white dark:focus:bg-slate-800 transition-all font-medium">
+    <div>
+        <label for="password_confirmation" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Confirm Password
+        </label>
+        <div class="relative auth-password-group">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <i class="fa-solid fa-shield text-sm"></i>
+            </div>
+            <input 
+                type="password" 
+                name="password_confirmation" 
+                required 
+                placeholder="••••••••" 
+                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium"
+            >
+            <button 
+                type="button" 
+                class="auth-password-toggle absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors bg-transparent border-none cursor-pointer"
+            >
+                <i class="fa-regular fa-eye text-xs"></i>
+            </button>
+        </div>
     </div>
 
-    <div class="pt-1">
-        <button type="submit" 
-            class="js-submit-btn w-full py-2.5 px-4 bg-theme-primary hover:bg-theme-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-none cursor-pointer">
-            <span>Update Password</span>
-            <i class="fa-solid fa-check text-xs"></i>
-        </button>
-    </div>
+    <button 
+        type="submit" 
+        class="w-full mt-2 py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-emerald-700/20 hover:shadow-emerald-700/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+    >
+        <span class="btn-text">Update Password</span>
+        <i class="btn-icon fa-solid fa-check text-xs"></i>
+    </button>
 </form>

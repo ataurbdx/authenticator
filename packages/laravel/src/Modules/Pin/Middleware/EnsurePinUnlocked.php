@@ -35,7 +35,11 @@ class EnsurePinUnlocked
             }
 
             // For Web Blade views: Render the PIN lock overlay page while keeping current URL
-            return response()->view('authenticator::auth.pin-lock', [
+            $viewName = view()->exists('authenticator.pin-lock') 
+                ? 'authenticator.pin-lock' 
+                : 'authenticator::pin-lock';
+
+            return response()->view($viewName, [
                 'intended_url' => $request->fullUrl(),
             ], 423);
         }
